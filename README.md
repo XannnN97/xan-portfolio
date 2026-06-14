@@ -13,6 +13,7 @@ v3 — Stellar/Solar   暖色尝试 · 渐入红黄
 v4 — Cybercosmos     蓝紫回退 · 当前选中的方向
 v5 — Ember/Signal    红黄标题 + 白字（直接出稿，不满意）
 v6 — CINERAMA/PULSE  调研后重新出发（设计方向稿，待定稿）
+v7 — SCORE          纯黑 · 五线谱 · 时间线左右滚动 · 全白字体 · Space Grotesk（⭐ 当前）
 ```
 
 ---
@@ -59,10 +60,13 @@ xan-portfolio/
 
 ## 当前状态
 
-方向未定。v6 的两版（CINERAMA / PULSE）是调研后出的设计方向稿，
-等待确认后再搭建完整功能版本。
+⭐ **当前为 v7 SCORE 方向**
+- 纯黑背景 #000
+- 五线谱线条分隔标题
+- 水平时间线滚动（剪辑工作流隐喻）
+- 全白字体 Space Grotesk
+- 顶部标尺 + 播放头 + 底部进度条
 
 ---
 
 *主页访问：https://xannnn97.github.io/xan-portfolio/*
-*（如已开启 Pages）*

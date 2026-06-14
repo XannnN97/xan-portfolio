@@ -2,881 +2,498 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xan · AI Short Film Director</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Xan · Score</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================
-   CSS Reset & Base
+   SCORE — 五线谱 · 时间线
+   纯黑背景 · 白字 · 左右滚动
    ============================================ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
-  background:#0a0a0f;
-  color:#e0e0e0;
-  line-height:1.7;
-  overflow-x:hidden;
+html,body{
+  height:100%;
+  overflow:hidden;
+  font-family:'Space Grotesk','SF Pro Display','Helvetica Neue',Arial,sans-serif;
+  background:#000;
+  color:#fff;
   cursor:default
 }
 
-/* ============================================
-   Canvas Background
-   ============================================ */
-#particle-canvas{
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  z-index:0;
-  pointer-events:none
-}
-
-/* ============================================
-   Scrollbar
-   ============================================ */
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#0a0a0f}
-::-webkit-scrollbar-thumb{background:#1a3a5c;border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:#2a5a8c}
-
-/* ============================================
-   Navigation
-   ============================================ */
-.nav{
-  position:fixed;
-  top:0;left:0;right:0;
-  z-index:100;
-  padding:0 2rem;
-  height:60px;
+/* ========== 水平滚动容器 ========== */
+.timeline{
   display:flex;
-  align-items:center;
-  justify-content:space-between;
-  background:rgba(10,10,15,0.8);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  border-bottom:1px solid rgba(0,200,255,0.08);
-  transition:background 0.3s
+  height:100vh;
+  overflow-x:hidden;
+  scroll-behavior:smooth;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch
 }
-.nav-brand{
-  font-size:1.1rem;
-  font-weight:700;
-  color:#00c8ff;
-  letter-spacing:2px;
-  text-decoration:none
+.section{
+  flex:0 0 100vw;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:4rem 6rem;
+  position:relative;
+  scroll-snap-align:start
 }
-.nav-links{display:flex;gap:1.8rem;list-style:none}
-.nav-links a{
-  color:#8899aa;
-  text-decoration:none;
-  font-size:0.85rem;
-  letter-spacing:1px;
-  transition:color 0.3s;
+
+/* ========== 时间线标尺（顶部） ========== */
+.timeline-ruler{
+  position:fixed;top:0;left:0;right:0;
+  height:32px;z-index:100;
+  background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:flex;align-items:center;
+  padding:0 2rem;
+  border-bottom:1px solid rgba(255,255,255,0.03)
+}
+.timeline-marks{
+  display:flex;gap:0;width:100%;
+  justify-content:space-around;
   position:relative
 }
-.nav-links a::after{
-  content:'';
-  position:absolute;bottom:-4px;left:0;
-  width:0;height:1px;
-  background:#00c8ff;
-  transition:width 0.3s
-}
-.nav-links a:hover{color:#00c8ff}
-.nav-links a:hover::after{width:100%}
-
-/* ============================================
-   Section Base
-   ============================================ */
-.section{
-  position:relative;
-  z-index:1;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  padding:80px 2rem
-}
-.section-inner{
-  max-width:900px;
-  margin:0 auto;
-  width:100%
-}
-.section-label{
-  font-size:0.75rem;
-  letter-spacing:3px;
-  color:#00c8ff;
-  text-transform:uppercase;
-  margin-bottom:1rem;
-  opacity:0.7
-}
-.section-title{
-  font-size:2.2rem;
+.timeline-mark{
+  font-size:0.55rem;letter-spacing:2px;
+  color:rgba(255,255,255,0.12);
   font-weight:300;
-  margin-bottom:2rem;
-  color:#f0f0f0
-}
-.section-title strong{font-weight:600;color:#00c8ff}
-
-/* ============================================
-   Hero Section
-   ============================================ */
-.hero{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  position:relative;
-  z-index:1;
-  padding:2rem
-}
-.hero-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 18px;
-  border:1px solid rgba(0,200,255,0.25);
-  border-radius:20px;
-  font-size:0.75rem;
-  letter-spacing:2px;
-  color:#00c8ff;
-  text-transform:uppercase;
-  margin-bottom:2rem;
-  opacity:0;
-  animation:fadeSlideUp 0.8s 0.3s forwards
-}
-.hero-badge-dot{
-  width:6px;height:6px;
-  border-radius:50%;
-  background:#00c8ff;
-  animation:pulseDot 2s infinite
-}
-.hero-name{
-  font-size:clamp(2.8rem,8vw,5.5rem);
-  font-weight:200;
-  letter-spacing:6px;
-  color:#f0f0f0;
-  margin-bottom:1rem;
-  opacity:0;
-  animation:fadeSlideUp 0.8s 0.6s forwards
-}
-.hero-name span{
-  font-weight:700;
-  background:linear-gradient(135deg,#00c8ff,#7b61ff);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text
-}
-.hero-role{
-  font-size:clamp(1rem,2.5vw,1.4rem);
-  font-weight:300;
-  color:#668899;
-  margin-bottom:0.5rem;
-  opacity:0;
-  animation:fadeSlideUp 0.8s 0.9s forwards;
-  letter-spacing:1px
-}
-.hero-role-arrow{
-  display:inline-block;
-  margin:0 12px;
-  color:#00c8ff;
-  font-weight:300
-}
-.hero-tagline{
-  font-size:clamp(0.9rem,1.8vw,1.1rem);
-  color:#556677;
-  max-width:600px;
-  opacity:0;
-  animation:fadeSlideUp 0.8s 1.2s forwards
-}
-.hero-scroll{
-  position:absolute;
-  bottom:2rem;
-  left:50%;
-  transform:translateX(-50%);
-  opacity:0;
-  animation:fadeSlideUp 0.8s 1.8s forwards;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:8px;
-  color:#556677;
-  font-size:0.7rem;
-  letter-spacing:2px
-}
-.hero-scroll-line{
-  width:1px;height:40px;
-  background:linear-gradient(to bottom,#00c8ff,transparent);
-  animation:scrollBounce 2s infinite
-}
-
-/* ============================================
-   About Section
-   ============================================ */
-.about-text{
-  font-size:1.05rem;
-  color:#99aabb;
-  line-height:1.9;
-  margin-bottom:2.5rem;
-  max-width:700px
-}
-.about-text .highlight{
-  color:#f0f0f0;
-  font-weight:500
-}
-.about-text .accent{color:#00c8ff}
-
-/* Skills Cloud */
-.skills-cloud{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin-top:0.5rem
-}
-.skill-tag{
-  padding:6px 18px;
-  border:1px solid rgba(0,200,255,0.15);
-  border-radius:20px;
-  font-size:0.82rem;
-  color:#88bbdd;
-  transition:all 0.3s;
-  cursor:default;
-  position:relative;
-  overflow:hidden
-}
-.skill-tag::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;bottom:0;
-  background:linear-gradient(135deg,rgba(0,200,255,0.08),rgba(123,97,255,0.05));
-  opacity:0;
-  transition:opacity 0.3s
-}
-.skill-tag:hover::before{opacity:1}
-.skill-tag:hover{
-  border-color:rgba(0,200,255,0.4);
-  color:#00c8ff;
-  transform:translateY(-2px);
-  box-shadow:0 4px 20px rgba(0,200,255,0.1)
-}
-
-/* ============================================
-   Works Section
-   ============================================ */
-.works-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:1.5rem;
-  margin-top:1rem
-}
-.work-card{
-  background:rgba(255,255,255,0.02);
-  border:1px solid rgba(255,255,255,0.05);
-  border-radius:12px;
-  overflow:hidden;
-  transition:all 0.4s;
-  position:relative;
-  cursor:pointer
-}
-.work-card::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;bottom:0;
-  border-radius:12px;
-  padding:1px;
-  background:linear-gradient(135deg,rgba(0,200,255,0.2),rgba(123,97,255,0.1));
-  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite:xor;
-  mask-composite:exclude;
-  opacity:0;
-  transition:opacity 0.4s;
-  pointer-events:none
-}
-.work-card:hover::before{opacity:1}
-.work-card:hover{
-  transform:translateY(-6px);
-  border-color:rgba(0,200,255,0.15);
-  box-shadow:0 12px 40px rgba(0,200,255,0.08);
-  background:rgba(255,255,255,0.04)
-}
-.work-card-cover{
-  height:180px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  overflow:hidden
-}
-.work-card-cover .cover-label{
-  font-size:2rem;
-  font-weight:200;
-  letter-spacing:4px;
-  color:rgba(255,255,255,0.15);
-  z-index:1
-}
-.work-card-cover .cover-glow{
-  position:absolute;
-  width:120px;height:120px;
-  border-radius:50%;
-  filter:blur(40px);
-  opacity:0.4;
-  transition:opacity 0.4s
-}
-.work-card:hover .cover-glow{opacity:0.7}
-.work-card-body{
-  padding:1.2rem 1.5rem 1.5rem
-}
-.work-card-title{
-  font-size:1rem;
-  font-weight:600;
-  color:#d0d0e0;
-  margin-bottom:4px
-}
-.work-card-tag{
-  font-size:0.7rem;
-  color:#00c8ff;
-  letter-spacing:1px;
-  margin-bottom:8px;
   text-transform:uppercase
 }
-.work-card-desc{
-  font-size:0.85rem;
-  color:#778899;
-  line-height:1.6
+.timeline-mark.active{color:rgba(255,255,255,0.5)}
+
+/* ========== 播放头（标尺下的指示线） ========== */
+.playhead{
+  position:fixed;top:32px;bottom:0;
+  width:1px;z-index:99;
+  background:rgba(255,255,255,0.04);
+  pointer-events:none;
+  transition:left 0.3s
+}
+.playhead::before{
+  content:'';position:absolute;top:0;left:-3px;
+  width:7px;height:7px;
+  background:rgba(255,255,255,0.15);
+  clip-path:polygon(0 0,100% 0,50% 100%)
 }
 
-/* ============================================
-   Contact Section
-   ============================================ */
-.contact-links{
-  display:flex;
-  flex-wrap:wrap;
-  gap:1rem;
-  margin-top:1.5rem
+/* ========== 进度条（底部） ========== */
+.timeline-progress{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  height:2px;background:rgba(255,255,255,0.03)
 }
-.contact-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding:12px 28px;
-  border:1px solid rgba(0,200,255,0.2);
-  border-radius:8px;
-  color:#88aacc;
-  text-decoration:none;
-  font-size:0.9rem;
-  transition:all 0.3s;
-  position:relative;
-  overflow:hidden;
-  background:rgba(255,255,255,0.02)
-}
-.contact-btn::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;bottom:0;
-  background:linear-gradient(135deg,rgba(0,200,255,0.1),transparent);
-  opacity:0;
-  transition:opacity 0.3s
-}
-.contact-btn:hover::before{opacity:1}
-.contact-btn:hover{
-  border-color:rgba(0,200,255,0.5);
-  color:#00c8ff;
-  transform:translateY(-2px);
-  box-shadow:0 4px 20px rgba(0,200,255,0.12)
-}
-.contact-btn-icon{
-  font-size:1.2rem;
-  width:24px;
-  text-align:center;
-  position:relative;
-  z-index:1
-}
-.contact-btn-label{
-  position:relative;
-  z-index:1
+.timeline-progress-bar{
+  height:100%;width:25%;
+  background:rgba(255,255,255,0.08);
+  transition:width 0.3s
 }
 
-/* ============================================
-   Footer
-   ============================================ */
-.footer{
+/* ========== 键盘提示 ========== */
+.kb-hint{
+  position:fixed;bottom:1.5rem;left:50%;
+  transform:translateX(-50%);z-index:50;
+  font-size:0.55rem;letter-spacing:3px;
+  color:rgba(255,255,255,0.06);
+  font-weight:300
+}
+
+/* ========== 五线谱装饰 ========== */
+.staff{
   position:relative;
-  z-index:1;
-  text-align:center;
-  padding:2rem;
-  border-top:1px solid rgba(255,255,255,0.03);
-  font-size:0.75rem;
-  color:#445566;
+  margin-bottom:2.5rem;
+  width:240px
+}
+.staff-lines{}
+.staff-line{
+  height:1px;width:100%;
+  background:rgba(255,255,255,0.06);
+  margin-bottom:6px
+}
+.staff-line:last-child{margin-bottom:0}
+.staff-label{
+  font-size:0.5rem;letter-spacing:4px;
+  color:rgba(255,255,255,0.04);
+  margin-top:10px;
+  text-transform:uppercase;
+  font-weight:300
+}
+
+/* ========== SECTION 通用 ========== */
+.section-number{
+  font-size:0.55rem;letter-spacing:5px;
+  color:rgba(255,255,255,0.08);
+  font-weight:300;margin-bottom:1rem;
+  text-transform:uppercase
+}
+.section-number span{color:rgba(255,255,255,0.25)}
+.section-title{
+  font-size:clamp(2.2rem,6vw,4rem);
+  font-weight:300;
+  letter-spacing:4px;
+  color:#fff;
+  margin-bottom:1.5rem
+}
+.section-title strong{
+  font-weight:700;
+  opacity:0.6
+}
+.section-divider{
+  width:40px;height:1px;
+  background:rgba(255,255,255,0.06);
+  margin:0 0 2rem 0
+}
+
+/* ========== HERO ========== */
+.hero-label{
+  font-size:0.65rem;letter-spacing:6px;
+  color:rgba(255,255,255,0.12);
+  margin-bottom:1.5rem;
+  text-transform:uppercase
+}
+.hero-name{
+  font-size:clamp(4rem,12vw,8rem);
+  font-weight:300;
+  letter-spacing:12px;
+  color:#fff;
+  line-height:1;
+  margin-bottom:0.5rem
+}
+.hero-name strong{font-weight:700;opacity:0.7}
+.hero-name em{
+  font-style:normal;
+  font-weight:200;
+  opacity:0.15
+}
+.hero-role{
+  font-size:clamp(0.9rem,2vw,1.2rem);
+  font-weight:300;letter-spacing:6px;
+  color:rgba(255,255,255,0.1);
+  margin-top:1rem
+}
+.hero-role span{
+  margin:0 15px;
+  opacity:0.05;font-weight:200
+}
+.hero-tagline{
+  font-size:clamp(0.7rem,1.2vw,0.85rem);
+  color:rgba(255,255,255,0.05);
+  letter-spacing:3px;
+  max-width:520px;
+  margin-top:0.4rem;
+  line-height:1.8
+}
+
+/* ========== ABOUT ========== */
+.about-text{
+  font-size:0.95rem;line-height:2;
+  color:rgba(255,255,255,0.35);
+  max-width:600px;font-weight:300;
   letter-spacing:1px
 }
+.about-text .hl{color:rgba(255,255,255,0.7);font-weight:400}
+.about-text .ac{color:rgba(255,255,255,0.5);font-weight:400}
 
-/* ============================================
-   Fade/Slide In Animation (Intersection Observer)
-   ============================================ */
-.reveal{
-  opacity:0;
-  transform:translateY(30px);
-  transition:opacity 0.8s ease,transform 0.8s ease
+.skill-row{
+  display:flex;flex-wrap:wrap;gap:6px;
+  margin-top:2rem;max-width:600px
 }
-.reveal.visible{
-  opacity:1;
-  transform:translateY(0)
+.skill-item{
+  font-size:0.65rem;
+  color:rgba(255,255,255,0.08);
+  letter-spacing:2px;font-weight:300;
+  padding:2px 0;
+  transition:color 0.3s;cursor:default
+}
+.skill-item::after{content:'·';margin-left:6px;opacity:0.3}
+.skill-item:last-child::after{display:none}
+.skill-item:hover{color:rgba(255,255,255,0.3)}
+
+/* ========== WORKS — 时间线卡片 ========== */
+.works-strip{display:flex;flex-direction:column;gap:0;margin-top:0}
+.work-entry{
+  display:flex;align-items:center;
+  gap:2rem;padding:1rem 0;
+  cursor:pointer;transition:all 0.3s;
+  border-bottom:1px solid rgba(255,255,255,0.02)
+}
+.work-entry:first-child{border-top:1px solid rgba(255,255,255,0.02)}
+.work-entry:hover{padding-left:1rem}
+.work-year{
+  font-size:0.6rem;letter-spacing:3px;
+  color:rgba(255,255,255,0.05);
+  min-width:55px;font-weight:300
+}
+.work-title{
+  font-size:1rem;font-weight:300;
+  letter-spacing:6px;color:rgba(255,255,255,0.5);
+  flex:1;transition:color 0.3s
+}
+.work-entry:hover .work-title{color:#fff}
+.work-tag{
+  font-size:0.55rem;letter-spacing:3px;
+  color:rgba(255,255,255,0.04);
+  text-transform:uppercase;
+  min-width:100px;text-align:right;
+  font-weight:300
 }
 
-/* ============================================
-   Keyframes
-   ============================================ */
-@keyframes fadeSlideUp{
-  to{opacity:1;transform:translateY(0)}
+/* ========== CONTACT ========== */
+.contact-strip{
+  display:flex;gap:0;flex-wrap:wrap;margin-top:0.5rem
 }
-@keyframes pulseDot{
-  0%,100%{opacity:1}
-  50%{opacity:0.3}
+.contact-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 24px;text-decoration:none;
+  border:1px solid rgba(255,255,255,0.02);
+  color:rgba(255,255,255,0.1);
+  font-size:0.8rem;letter-spacing:2px;
+  transition:all 0.3s;font-weight:300
 }
-@keyframes scrollBounce{
-  0%,100%{transform:translateY(0);opacity:1}
-  50%{transform:translateY(8px);opacity:0.4}
+.contact-item:hover{
+  color:#fff;
+  border-color:rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.01)
 }
-@keyframes fadeIn{
-  from{opacity:0}
-  to{opacity:1}
+.contact-item .icon{opacity:0.15;font-size:0.9rem}
+
+/* ========== FOOTER ========== */
+.footer{
+  position:relative;z-index:1;
+  text-align:center;padding:1.5rem;
+  font-size:0.55rem;letter-spacing:3px;
+  color:rgba(255,255,255,0.01)
 }
 
-/* ============================================
-   Responsive
-   ============================================ */
+/* ========== RESPONSIVE ========== */
 @media(max-width:768px){
-  .nav{padding:0 1rem}
-  .nav-links{gap:1rem}
-  .nav-links a{font-size:0.78rem}
-  .section{padding:60px 1.2rem;min-height:auto}
-  .section-title{font-size:1.6rem}
-  .hero-name{letter-spacing:3px}
-  .works-grid{grid-template-columns:1fr}
-  .contact-links{flex-direction:column}
-  .contact-btn{justify-content:center}
-  .about-text{font-size:0.95rem}
+  .section{padding:3rem 1.5rem}
+  .hero-name{letter-spacing:6px}
+  .work-entry{flex-wrap:wrap;gap:0.3rem}
+  .work-tag{text-align:left;min-width:auto}
+  .about-text{font-size:0.85rem}
+  .contact-strip{flex-direction:column}
+  .staff{width:160px}
 }
 @media(max-width:480px){
-  .nav-links a{font-size:0.72rem;letter-spacing:0.5px}
-  .nav-links{gap:0.7rem}
-  .skill-tag{font-size:0.75rem;padding:4px 14px}
+  .hero-name{letter-spacing:3px;font-size:clamp(3rem,15vw,5rem)}
+  .timeline-ruler{padding:0 1rem}
+  .timeline-mark{font-size:0.45rem}
 }
 </style>
 </head>
 <body>
 
-<!-- ===== Particle Canvas ===== -->
-<canvas id="particle-canvas"></canvas>
-
-<!-- ===== Navigation ===== -->
-<nav class="nav" id="navbar">
-  <a href="#hero" class="nav-brand">XAN</a>
-  <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#works">Works</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-</nav>
-
-<!-- ===== Hero ===== -->
-<section class="hero" id="hero">
-  <div class="hero-badge">
-    <span class="hero-badge-dot"></span>
-    Creator · Builder
+<!-- ===== 顶部标尺 ===== -->
+<div class="timeline-ruler">
+  <div class="timeline-marks">
+    <span class="timeline-mark active" data-index="0">Hero</span>
+    <span class="timeline-mark" data-index="1">About</span>
+    <span class="timeline-mark" data-index="2">Works</span>
+    <span class="timeline-mark" data-index="3">Contact</span>
   </div>
-  <h1 class="hero-name"><span>Xan</span></h1>
-  <p class="hero-role">
-    Film/TV Post-Production
-    <span class="hero-role-arrow">→</span>
-    <strong style="color:#b0b0c0;font-weight:500">AI Short Film Director</strong>
-  </p>
-  <p class="hero-tagline" id="tagline"></p>
-  <div class="hero-scroll">
-    <span>SCROLL</span>
-    <div class="hero-scroll-line"></div>
-  </div>
-</section>
+</div>
 
-<!-- ===== About ===== -->
-<section class="section" id="about">
-  <div class="section-inner">
-    <div class="reveal">
-      <p class="section-label">About</p>
-      <h2 class="section-title">从 <strong>后期</strong> 到 <strong>前期</strong></h2>
-      <div class="about-text">
-        <p>
-          我是 <span class="highlight">Xan</span>，一位从影视后期转型 AI 短片导演的创作者。
-        </p>
-        <p style="margin-top:1rem">
-          过去十年，我深耕在影视后期制作的每一个环节——剪辑、调色、合成、音效设计。
-          现在，我正将这份对镜头语言的直觉与 AI 生成技术融合，构建从
-          <span class="accent">"脑内画面"</span> 到
-          <span class="accent">"可执行分镜"</span> 的完整工具链。
-        </p>
-        <p style="margin-top:1rem">
-          我相信，AI 不会取代创作者，而是赋予每一个人将想象力转化为影像的能力。
-          我的使命是打造那条最短的路径。
-        </p>
+<!-- ===== 播放头 ===== -->
+<div class="playhead" id="playhead"></div>
+
+<!-- ===== 水平滚动容器 ===== -->
+<div class="timeline" id="timeline">
+
+  <!-- ===== HERO ===== -->
+  <section class="section" id="hero">
+    <div class="staff">
+      <div class="staff-lines">
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
       </div>
-      <h3 style="font-weight:300;font-size:1rem;color:#8899aa;margin-bottom:0.8rem">技能 · 工具链</h3>
-      <div class="skills-cloud">
-        <span class="skill-tag">Post-Production</span>
-        <span class="skill-tag">Compositing</span>
-        <span class="skill-tag">Color Grading</span>
-        <span class="skill-tag">Sound Design</span>
-        <span class="skill-tag">AI Film Pipeline</span>
-        <span class="skill-tag">Stable Diffusion</span>
-        <span class="skill-tag">ComfyUI</span>
-        <span class="skill-tag">Runway Gen</span>
-        <span class="skill-tag">Frame Interpolation</span>
-        <span class="skill-tag">Prompt Engineering</span>
-        <span class="skill-tag">DaVinci Resolve</span>
-        <span class="skill-tag">After Effects</span>
-        <span class="skill-tag">Nuke</span>
-        <span class="skill-tag">Blender</span>
-        <span class="skill-tag">Python</span>
-        <span class="skill-tag">Toolchain Development</span>
-      </div>
+      <p class="staff-label">— 001 —</p>
     </div>
-  </div>
-</section>
 
-<!-- ===== Works ===== -->
-<section class="section" id="works">
-  <div class="section-inner">
-    <div class="reveal">
-      <p class="section-label">Works</p>
-      <h2 class="section-title">代表 <strong>作品</strong></h2>
+    <p class="hero-label">Portfolio 2025</p>
+    <h1 class="hero-name"><strong>Xa</strong><em>n</em></h1>
+    <p class="hero-role">
+      Post-Production <span>→</span> AI Film Director
+    </p>
+    <p class="hero-tagline">
+      从"脑内画面"到"可执行分镜" — 构建 AI 短片创作最短路径。
+    </p>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <section class="section" id="about">
+    <div class="staff">
+      <div class="staff-lines">
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+      </div>
+      <p class="staff-label">— 002 —</p>
     </div>
-    <div class="works-grid">
 
-      <div class="work-card reveal">
-        <div class="work-card-cover" style="background:linear-gradient(135deg,#0a1628,#1a0a2e)">
-          <div class="cover-glow" style="background:#00c8ff;top:30%;left:20%"></div>
-          <div class="cover-glow" style="background:#7b61ff;top:50%;left:60%"></div>
-          <span class="cover-label">ECLIPSE</span>
-        </div>
-        <div class="work-card-body">
-          <p class="work-card-tag">AI Short Film · 2025</p>
-          <h3 class="work-card-title">Eclipse</h3>
-          <p class="work-card-desc">
-            一部完全由 AI 生成的科幻短片，探索记忆与身份边界的意识迷宫。
-            全程使用 ComfyUI 工作流 + 帧插值完成。
-          </p>
-        </div>
-      </div>
-
-      <div class="work-card reveal">
-        <div class="work-card-cover" style="background:linear-gradient(135deg,#1a0a2e,#0f1a2e)">
-          <div class="cover-glow" style="background:#7b61ff;top:25%;left:40%"></div>
-          <div class="cover-glow" style="background:#00c8ff;top:60%;left:30%"></div>
-          <span class="cover-label">NEON</span>
-        </div>
-        <div class="work-card-body">
-          <p class="work-card-tag">AI Music Video · 2025</p>
-          <h3 class="work-card-title">Neon Drizzle</h3>
-          <p class="work-card-desc">
-            赛博朋克风格的 AI 音乐短片，将传统剪辑节奏与 AI 视觉生成结合，
-            打造沉浸式的霓虹雨夜叙事。
-          </p>
-        </div>
-      </div>
-
-      <div class="work-card reveal">
-        <div class="work-card-cover" style="background:linear-gradient(135deg,#0f1a2e,#1a2e1a)">
-          <div class="cover-glow" style="background:#00c8ff;top:40%;left:30%"></div>
-          <div class="cover-glow" style="background:#00ff88;top:20%;left:60%"></div>
-          <span class="cover-label">SYNTH</span>
-        </div>
-        <div class="work-card-body">
-          <p class="work-card-tag">Toolchain · 2025</p>
-          <h3 class="work-card-title">SynthFrame</h3>
-          <p class="work-card-desc">
-            自研 AI 短片工具链：从文本分镜到视频帧的自动化管线，
-            集成 SD、帧插值与音频同步，打通全流程。
-          </p>
-        </div>
-      </div>
-
-      <div class="work-card reveal">
-        <div class="work-card-cover" style="background:linear-gradient(135deg,#1a2e1a,#2e1a1a)">
-          <div class="cover-glow" style="background:#00ff88;top:35%;left:50%"></div>
-          <div class="cover-glow" style="background:#ff6600;top:55%;left:20%"></div>
-          <span class="cover-label">PIPELINE</span>
-        </div>
-        <div class="work-card-body">
-          <p class="work-card-tag">Research · 2024</p>
-          <h3 class="work-card-title">FrameFlow Pipeline</h3>
-          <p class="work-card-desc">
-            探索 AI 与传统后期制作的最优结合方案，
-            一套可复用的 AI 视频生成 + 后期精修的生产流程框架。
-          </p>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ===== Contact ===== -->
-<section class="section" id="contact">
-  <div class="section-inner">
-    <div class="reveal">
-      <p class="section-label">Contact</p>
-      <h2 class="section-title">Let's <strong>Connect</strong></h2>
-      <p style="color:#778899;margin-bottom:0.5rem;font-size:0.95rem">
-        聊聊 AI 影像的可能性，或者一起做点什么。
+    <p class="section-number"><span>01</span> · ABOUT</p>
+    <h2 class="section-title">从 <strong>后期</strong> 到 <strong>前期</strong></h2>
+    <div class="section-divider"></div>
+    <div class="about-text">
+      <p>我是 <span class="hl">Xan</span>，从影视后期转型 AI 短片导演的创作者。</p>
+      <p style="margin-top:1rem">
+        十年后期——剪辑、调色、合成、音效。现在将镜头直觉与 AI 融合，构建
+        <span class="ac">"脑内画面"</span> → <span class="ac">"可执行分镜"</span> 的工具链。
       </p>
-      <div class="contact-links">
-        <a href="https://github.com" target="_blank" rel="noopener" class="contact-btn">
-          <span class="contact-btn-icon">&#9733;</span>
-          <span class="contact-btn-label">GitHub</span>
-        </a>
-        <a href="mailto:xan@example.com" class="contact-btn">
-          <span class="contact-btn-icon">&#9993;</span>
-          <span class="contact-btn-label">xan@example.com</span>
-        </a>
-        <a href="#" class="contact-btn" onclick="showWechat(event)">
-          <span class="contact-btn-icon">&#64;</span>
-          <span class="contact-btn-label">WeChat</span>
-        </a>
-        <a href="https://twitter.com" target="_blank" rel="noopener" class="contact-btn">
-          <span class="contact-btn-icon">&#9998;</span>
-          <span class="contact-btn-label">Twitter / X</span>
-        </a>
+      <p style="margin-top:1rem">AI 赋予每个人将想象力转化为影像的能力。</p>
+    </div>
+
+    <div class="skill-row">
+      <span class="skill-item">Post-Production</span>
+      <span class="skill-item">Compositing</span>
+      <span class="skill-item">Color Grading</span>
+      <span class="skill-item">Sound Design</span>
+      <span class="skill-item">AI Film Pipeline</span>
+      <span class="skill-item">Stable Diffusion</span>
+      <span class="skill-item">ComfyUI</span>
+      <span class="skill-item">Runway Gen</span>
+      <span class="skill-item">Frame Interpolation</span>
+      <span class="skill-item">Prompt Engineering</span>
+      <span class="skill-item">DaVinci Resolve</span>
+      <span class="skill-item">After Effects</span>
+      <span class="skill-item">Nuke</span>
+      <span class="skill-item">Blender</span>
+      <span class="skill-item">Python</span>
+      <span class="skill-item">Toolchain Dev</span>
+    </div>
+  </section>
+
+  <!-- ===== WORKS ===== -->
+  <section class="section" id="works">
+    <div class="staff">
+      <div class="staff-lines">
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+      </div>
+      <p class="staff-label">— 003 —</p>
+    </div>
+
+    <p class="section-number"><span>02</span> · WORKS</p>
+    <h2 class="section-title">代表 <strong>作品</strong></h2>
+    <div class="section-divider"></div>
+
+    <div class="works-strip">
+      <div class="work-entry">
+        <span class="work-year">2025</span>
+        <span class="work-title">Eclipse</span>
+        <span class="work-tag">AI Short Film</span>
+      </div>
+      <div class="work-entry">
+        <span class="work-year">2025</span>
+        <span class="work-title">Neon Drizzle</span>
+        <span class="work-tag">AI Music Video</span>
+      </div>
+      <div class="work-entry">
+        <span class="work-year">2025</span>
+        <span class="work-title">SynthFrame</span>
+        <span class="work-tag">Toolchain</span>
+      </div>
+      <div class="work-entry">
+        <span class="work-year">2024</span>
+        <span class="work-title">FrameFlow</span>
+        <span class="work-tag">Research</span>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ===== Footer ===== -->
-<footer class="footer">
-  <p>&copy; 2025 Xan · Built with intention</p>
-</footer>
+  <!-- ===== CONTACT ===== -->
+  <section class="section" id="contact">
+    <div class="staff">
+      <div class="staff-lines">
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+        <div class="staff-line"></div>
+      </div>
+      <p class="staff-label">— 004 —</p>
+    </div>
+
+    <p class="section-number"><span>03</span> · CONTACT</p>
+    <h2 class="section-title">Let's <strong>Connect</strong></h2>
+    <div class="section-divider"></div>
+    <p style="color:rgba(255,255,255,0.08);font-size:0.8rem;margin-bottom:1rem;letter-spacing:2px;font-weight:300">聊聊 AI 影像的可能性，或者一起做点什么。</p>
+
+    <div class="contact-strip">
+      <a href="#" class="contact-item"><span class="icon">★</span> GitHub</a>
+      <a href="#" class="contact-item"><span class="icon">✉</span> Email</a>
+      <a href="#" class="contact-item"><span class="icon">@</span> WeChat</a>
+      <a href="#" class="contact-item"><span class="icon">✎</span> Twitter</a>
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== 底部进度条 ===== -->
+<div class="timeline-progress">
+  <div class="timeline-progress-bar" id="progressBar"></div>
+</div>
+
+<p class="kb-hint">← 滚轮 / 方向键 左右浏览 →</p>
 
 <script>
-/* ============================================
-   Particle System — Fluid-like Canvas Background
-   ============================================ */
 ;(function(){
-  const canvas = document.getElementById('particle-canvas');
-  const ctx = canvas.getContext('2d');
-  let particles = [];
-  let mouse = { x: null, y: null, radius: 120 };
-  let W, H;
+  const timeline = document.getElementById('timeline');
+  const marks = document.querySelectorAll('.timeline-mark');
+  const progressBar = document.getElementById('progressBar');
+  const sections = document.querySelectorAll('.section');
+  const totalSections = sections.length;
 
-  function resize(){
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-    const count = Math.min(
-      Math.floor((W * H) / 12000),
-      W < 600 ? 60 : 120
-    );
-    particles = [];
-    for(let i = 0; i < count; i++){
-      particles.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        baseSize: Math.random() * 2.5 + 1,
-        size: 0,
-        alpha: Math.random() * 0.4 + 0.1,
-        hue: Math.random() * 60 + 190  // 190-250 blue-purple
-      });
+  // 鼠标滚轮 → 左右滚动
+  timeline.addEventListener('wheel', function(e){
+    e.preventDefault();
+    this.scrollLeft += e.deltaY;
+  }, { passive: false });
+
+  // 键盘方向键
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowRight'){
+      timeline.scrollLeft += window.innerWidth * 0.8;
+    } else if(e.key === 'ArrowLeft'){
+      timeline.scrollLeft -= window.innerWidth * 0.8;
     }
-  }
+  });
 
-  window.addEventListener('resize', resize);
+  // 更新标尺高亮 + 进度条 + 播放头
+  function updateUI(){
+    const scrollLeft = timeline.scrollLeft;
+    const maxScroll = timeline.scrollWidth - window.innerWidth;
+    const progress = maxScroll > 0 ? scrollLeft / maxScroll : 0;
+    progressBar.style.width = (25 + progress * 50) + '%';
 
-  // Mouse / touch tracking
-  function onMove(x, y){
-    mouse.x = x;
-    mouse.y = y;
-  }
-  document.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
-  document.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    if(t) onMove(t.clientX, t.clientY);
-  }, { passive: true });
-  document.addEventListener('touchend', () => { mouse.x = null; mouse.y = null; });
-  document.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+    // 播放头位置
+    const playhead = document.getElementById('playhead');
+    // Position at ~30% from left as a visual anchor
+    playhead.style.left = (scrollLeft + window.innerWidth * 0.3) + 'px';
 
-  function animate(){
-    ctx.clearRect(0, 0, W, H);
-
-    for(let i = 0; i < particles.length; i++){
-      const p = particles[i];
-
-      // Mouse interaction
-      if(mouse.x !== null && mouse.y !== null){
-        const dx = mouse.x - p.x;
-        const dy = mouse.y - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if(dist < mouse.radius){
-          const force = (mouse.radius - dist) / mouse.radius;
-          const angle = Math.atan2(dy, dx);
-          p.vx -= Math.cos(angle) * force * 0.3;
-          p.vy -= Math.sin(angle) * force * 0.3;
-          p.size = p.baseSize + force * 3;
-        } else {
-          p.size += (p.baseSize - p.size) * 0.05;
-        }
-      } else {
-        p.size += (p.baseSize - p.size) * 0.05;
-      }
-
-      // Damping
-      p.vx *= 0.98;
-      p.vy *= 0.98;
-
-      // Speed limit
-      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-      if(speed > 2){ p.vx = (p.vx / speed) * 2; p.vy = (p.vy / speed) * 2; }
-
-      p.x += p.vx;
-      p.y += p.vy;
-
-      // Wrap around
-      if(p.x < -10) p.x = W + 10;
-      if(p.x > W + 10) p.x = -10;
-      if(p.y < -10) p.y = H + 10;
-      if(p.y > H + 10) p.y = -10;
-
-      // Draw
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = `hsla(${p.hue}, 70%, 60%, ${p.alpha})`;
-      ctx.fill();
-
-      // Connections (optimize: only connect nearby particles)
-      for(let j = i + 1; j < particles.length; j++){
-        const p2 = particles[j];
-        const dx = p.x - p2.x;
-        const dy = p.y - p2.y;
-        const dist = dx * dx + dy * dy;
-        if(dist < 15000){
-          const alpha = (1 - dist / 15000) * 0.15;
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.strokeStyle = `hsla(${(p.hue + p2.hue) / 2}, 60%, 55%, ${alpha})`;
-          ctx.lineWidth = 0.5;
-          ctx.stroke();
-        }
-      }
-    }
-
-    requestAnimationFrame(animate);
-  }
-
-  resize();
-  animate();
-})();
-
-/* ============================================
-   Typewriter Tagline
-   ============================================ */
-;(function(){
-  const el = document.getElementById('tagline');
-  const text = '从"脑内画面"到"可执行分镜" — 构建 AI 短片创作最短路径。';
-  let i = 0;
-  el.textContent = '';
-  function type(){
-    if(i < text.length){
-      el.textContent += text.charAt(i);
-      i++;
-      setTimeout(type, 40 + Math.random() * 30);
-    }
-  }
-  setTimeout(type, 1400); // starts after hero animation
-})();
-
-/* ============================================
-   Intersection Observer — Reveal on Scroll
-   ============================================ */
-;(function(){
-  const reveals = document.querySelectorAll('.reveal');
-  if(!('IntersectionObserver' in window)){
-    reveals.forEach(el => el.classList.add('visible'));
-    return;
-  }
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting){
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
+    // 标尺高亮
+    const sectionWidth = window.innerWidth;
+    const activeIndex = Math.round(scrollLeft / sectionWidth);
+    marks.forEach((m, i) => {
+      m.classList.toggle('active', i === activeIndex);
     });
-  }, { threshold: 0.15 });
-  reveals.forEach(el => observer.observe(el));
+  }
+
+  timeline.addEventListener('scroll', updateUI);
+  window.addEventListener('resize', updateUI);
+  setTimeout(updateUI, 100);
 })();
-
-/* ============================================
-   Nav Active State — highlight current section
-   ============================================ */
-;(function(){
-  const sections = document.querySelectorAll('.section, .hero');
-  const navLinks = document.querySelectorAll('.nav-links a');
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting){
-        const id = entry.target.id;
-        navLinks.forEach(a => {
-          a.style.color = a.getAttribute('href') === '#' + id ? '#00c8ff' : '';
-        });
-      }
-    });
-  }, { threshold: 0.3 });
-  sections.forEach(s => observer.observe(s));
-})();
-
-/* ============================================
-   WeChat Modal (simple inline alert)
-   ============================================ */
-function showWechat(e){
-  e.preventDefault();
-  // Create a lightweight modal
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `
-    position:fixed;top:0;left:0;right:0;bottom:0;
-    background:rgba(0,0,0,0.7);z-index:200;
-    display:flex;align-items:center;justify-content:center;
-    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-    animation:fadeIn 0.3s
-  `;
-  overlay.onclick = () => document.body.removeChild(overlay);
-
-  const box = document.createElement('div');
-  box.style.cssText = `
-    background:#12121a;border:1px solid rgba(0,200,255,0.2);
-    border-radius:16px;padding:2.5rem 3rem;text-align:center;
-    max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.5)
-  `;
-  box.onclick = e => e.stopPropagation();
-
-  box.innerHTML = `
-    <div style="font-size:3rem;margin-bottom:1rem">💬</div>
-    <h3 style="color:#f0f0f0;font-weight:400;margin-bottom:0.5rem">添加微信</h3>
-    <p style="color:#88aacc;font-size:0.9rem;margin-bottom:1.5rem">
-      扫描二维码或搜索 ID
-    </p>
-    <div style="
-      background:linear-gradient(135deg,rgba(0,200,255,0.05),rgba(123,97,255,0.05));
-      border:1px solid rgba(0,200,255,0.15);border-radius:8px;
-      padding:1rem;font-family:monospace;font-size:1.2rem;
-      color:#00c8ff;letter-spacing:2px;margin-bottom:1.5rem
-    ">Xan_AI_Film</div>
-    <button onclick="this.closest('[style]').parentNode.remove()" style="
-      background:transparent;border:1px solid rgba(0,200,255,0.3);
-      color:#00c8ff;padding:8px 24px;border-radius:8px;
-      cursor:pointer;font-size:0.85rem;letter-spacing:1px;
-      transition:all 0.3s
-    " onmouseover="this.style.borderColor='rgba(0,200,255,0.6)'" onmouseout="this.style.borderColor='rgba(0,200,255,0.3)'">
-      Close
-    </button>
-  `;
-
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-}
 </script>
 
 </body>
