@@ -19,16 +19,50 @@ html,body{
   -webkit-font-smoothing:antialiased
 }
 
+/* ========== Canvas 星空 ========== */
+#stars-canvas{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  z-index:-3;
+  pointer-events:none
+}
+
+/* ========== 毛玻璃质感层 ========== */
+.glass{
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  z-index:-2;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.008) 0%, transparent 65%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,0.002) 3px,
+      rgba(255,255,255,0.002) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,0.002) 3px,
+      rgba(255,255,255,0.002) 4px
+    )
+}
+
 /* ========== 水平滚动容器 ========== */
 .timeline{
   display:flex;
   height:100vh;
   overflow:hidden;
   scroll-behavior:smooth;
-  position:relative
+  position:relative;
+  z-index:1
 }
 
-/* ========== 五线谱 — 贯穿全页的5根线 ========== */
+/* ========== 五线谱 ========== */
 .staff-line{
   position:absolute;
   left:0;right:0;
@@ -50,8 +84,6 @@ html,body{
   position:relative;
   z-index:1
 }
-
-/* 音轨定位 */
 .lane{
   position:absolute;
   left:6rem;
@@ -65,7 +97,7 @@ html,body{
 .lane-3{top:48%;height:15%}
 .lane-4{top:63%;height:15%}
 
-/* ========== 时间线标尺 ========== */
+/* ========== 标尺 ========== */
 .timeline-ruler{
   position:fixed;top:0;left:0;right:0;
   height:28px;z-index:100;
@@ -123,7 +155,7 @@ html,body{
   text-transform:uppercase
 }
 
-/* ========== HERO — 纯白分层 ========== */
+/* ========== HERO ========== */
 .hero-label{
   font-size:0.6rem;letter-spacing:5px;
   color:#fff;font-weight:200;
@@ -134,8 +166,8 @@ html,body{
   font-weight:200;letter-spacing:10px;
   color:#fff;line-height:1.1
 }
-.hero-name strong{font-weight:700;color:#fff}
-.hero-name em{font-style:normal;font-weight:200;color:#fff}
+.hero-name strong{font-weight:700}
+.hero-name em{font-style:normal;font-weight:200}
 .hero-role{
   font-size:clamp(0.75rem,1.5vw,0.95rem);
   font-weight:200;letter-spacing:5px;
@@ -148,7 +180,7 @@ html,body{
   color:#fff;line-height:1.6;max-width:520px
 }
 
-/* ========== ABOUT — 纯白 ========== */
+/* ========== ABOUT ========== */
 .section-number{
   font-size:0.5rem;letter-spacing:4px;
   color:#fff;font-weight:200;
@@ -159,15 +191,14 @@ html,body{
   font-weight:200;letter-spacing:3px;
   color:#fff
 }
-.section-title strong{font-weight:500;color:#fff}
-
+.section-title strong{font-weight:500}
 .about-text{
   font-size:clamp(0.75rem,1.2vw,0.9rem);
   line-height:1.9;color:#fff;
   max-width:560px;font-weight:200;letter-spacing:1px
 }
-.about-text .hl{font-weight:500;color:#fff}
-.about-text .ac{font-weight:400;color:#fff}
+.about-text .hl{font-weight:500}
+.about-text .ac{font-weight:400}
 .skill-row{
   display:flex;flex-wrap:wrap;gap:6px;max-width:560px
 }
@@ -180,7 +211,7 @@ html,body{
 .skill-item:last-child::after{display:none}
 .skill-item:hover{opacity:0.5}
 
-/* ========== WORKS — 纯白 ========== */
+/* ========== WORKS ========== */
 .works-strip{display:flex;flex-direction:column;gap:0}
 .work-entry{
   display:flex;align-items:center;
@@ -208,7 +239,7 @@ html,body{
   min-width:80px;text-align:right
 }
 
-/* ========== CONTACT — 纯白 ========== */
+/* ========== CONTACT ========== */
 .contact-strip{
   display:flex;flex-wrap:wrap;gap:0;margin:0
 }
@@ -246,6 +277,13 @@ html,body{
 </head>
 <body>
 
+<!-- ===== 星空 Canvas ===== -->
+<canvas id="stars-canvas"></canvas>
+
+<!-- ===== 毛玻璃质感层 ===== -->
+<div class="glass"></div>
+
+<!-- ===== 标尺 ===== -->
 <div class="timeline-ruler">
   <div class="timeline-marks">
     <span class="timeline-mark active" data-index="0">Hero</span>
@@ -338,6 +376,109 @@ html,body{
 </div>
 
 <script>
+/* ============================================
+   星空 Canvas — 毛玻璃下方的星域
+   鼠标移动时星星有微弱扰动
+   ============================================ */
+;(function(){
+  const canvas = document.getElementById('stars-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  let stars = [];
+  let mouse = { x: -1000, y: -1000 };
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    initStars();
+  }
+
+  function initStars(){
+    stars = [];
+    const count = Math.min(Math.floor((W * H) / 2500), 300);
+    for(let i = 0; i < count; i++){
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        baseX: 0,
+        baseY: 0,
+        size: Math.random() * 1.2 + 0.3,
+        alpha: Math.random() * 0.35 + 0.02,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.2 + Math.random() * 0.3
+      });
+    }
+    stars.forEach(s => { s.baseX = s.x; s.baseY = s.y; });
+  }
+
+  window.addEventListener('resize', resize);
+
+  // 鼠标追踪（document 级别，覆盖整个页面）
+  document.addEventListener('mousemove', function(e){
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+  document.addEventListener('mouseleave', function(){
+    mouse.x = -1000;
+    mouse.y = -1000;
+  });
+  document.addEventListener('touchmove', function(e){
+    const t = e.touches[0];
+    if(t){ mouse.x = t.clientX; mouse.y = t.clientY; }
+  }, { passive: true });
+  document.addEventListener('touchend', function(){
+    mouse.x = -1000;
+    mouse.y = -1000;
+  });
+
+  let time = 0;
+
+  function animate(){
+    time += 0.005;
+    ctx.clearRect(0, 0, W, H);
+
+    for(let i = 0; i < stars.length; i++){
+      const s = stars[i];
+
+      // 细微呼吸闪烁
+      const breathe = Math.sin(time * s.speed + s.phase) * 0.15;
+      const displayAlpha = Math.max(0, Math.min(1, s.alpha + breathe));
+
+      // 鼠标扰动：星星远离鼠标方向微移 + 亮度微增
+      const dx = s.baseX - mouse.x;
+      const dy = s.baseY - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      let offsetX = 0, offsetY = 0, glow = 0;
+
+      if(dist < 180){
+        const force = (180 - dist) / 180;
+        const angle = Math.atan2(dy, dx);
+        offsetX = Math.cos(angle) * force * 12;
+        offsetY = Math.sin(angle) * force * 12;
+        glow = force * 0.2;
+      }
+
+      // 缓慢回归原位
+      s.x += (s.baseX + offsetX - s.x) * 0.03;
+      s.y += (s.baseY + offsetY - s.y) * 0.03;
+
+      // 绘制
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size + glow * 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${displayAlpha + glow})`;
+      ctx.fill();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  resize();
+  animate();
+})();
+
+/* ============================================
+   时间线滚动
+   ============================================ */
 ;(function(){
   const timeline = document.getElementById('timeline');
   const marks = document.querySelectorAll('.timeline-mark');
@@ -359,13 +500,13 @@ html,body{
     }
   });
 
-  let touchStartX = 0, touchStartScroll = 0;
+  let tx = 0, ts = 0;
   timeline.addEventListener('touchstart', function(e){
-    touchStartX = e.touches[0].clientX;
-    touchStartScroll = this.scrollLeft;
+    tx = e.touches[0].clientX;
+    ts = this.scrollLeft;
   }, { passive: true });
   timeline.addEventListener('touchmove', function(e){
-    this.scrollLeft = touchStartScroll + (touchStartX - e.touches[0].clientX);
+    this.scrollLeft = ts + (tx - e.touches[0].clientX);
   }, { passive: true });
 
   function updateUI(){
