@@ -8,10 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-/* ============================================
-   SCORE — 五线谱 · 时间线
-   纯黑背景 · 白字 · 左右滚动
-   ============================================ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{
   height:100%;
@@ -19,22 +15,17 @@ html,body{
   font-family:'Space Grotesk','SF Pro Display','Helvetica Neue',Arial,sans-serif;
   background:#000;
   color:#fff;
-  cursor:default
+  cursor:default;
+  -webkit-font-smoothing:antialiased
 }
 
 /* ========== 水平滚动容器 ========== */
 .timeline{
   display:flex;
   height:100vh;
-  overflow-x:auto;
-  overflow-y:hidden;
-  scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-  -ms-overflow-style:none
+  overflow:hidden;
+  scroll-behavior:smooth
 }
-.timeline::-webkit-scrollbar{display:none}
-
 .section{
   flex:0 0 100vw;
   height:100vh;
@@ -42,70 +33,68 @@ html,body{
   flex-direction:column;
   justify-content:center;
   padding:4rem 6rem;
-  position:relative;
-  scroll-snap-align:start
+  position:relative
 }
 
-/* ========== 时间线标尺（顶部） ========== */
+/* ========== 时间线标尺 ========== */
 .timeline-ruler{
   position:fixed;top:0;left:0;right:0;
   height:32px;z-index:100;
-  background:rgba(0,0,0,0.85);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
+  background:#000;
   display:flex;align-items:center;
   padding:0 2rem;
-  border-bottom:1px solid rgba(255,255,255,0.03)
+  border-bottom:1px solid rgba(255,255,255,0.06)
 }
 .timeline-marks{
   display:flex;gap:0;width:100%;
-  justify-content:space-around;
-  position:relative
+  justify-content:space-around
 }
 .timeline-mark{
-  font-size:0.55rem;letter-spacing:2px;
-  color:rgba(255,255,255,0.12);
+  font-size:0.6rem;letter-spacing:2px;
+  color:rgba(255,255,255,0.2);
   font-weight:300;
-  text-transform:uppercase
+  text-transform:uppercase;
+  transition:color 0.3s
 }
-.timeline-mark.active{color:rgba(255,255,255,0.5)}
+.timeline-mark.active{color:rgba(255,255,255,0.6)}
 
 /* ========== 播放头 ========== */
 .playhead{
   position:fixed;top:32px;bottom:0;
   width:1px;z-index:99;
-  background:rgba(255,255,255,0.04);
+  background:rgba(255,255,255,0.06);
   pointer-events:none;
-  transition:left 0.2s
+  transition:left 0.25s ease
 }
 .playhead::before{
   content:'';position:absolute;top:0;left:-3px;
   width:7px;height:7px;
-  background:rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.2);
   clip-path:polygon(0 0,100% 0,50% 100%)
 }
 
-/* ========== 进度条（底部） ========== */
+/* ========== 进度条 ========== */
 .timeline-progress{
   position:fixed;bottom:0;left:0;right:0;z-index:100;
-  height:2px;background:rgba(255,255,255,0.03)
+  height:2px;background:rgba(255,255,255,0.04)
 }
 .timeline-progress-bar{
   height:100%;width:25%;
-  background:rgba(255,255,255,0.08);
-  transition:width 0.3s
+  background:rgba(255,255,255,0.12);
+  transition:width 0.25s
 }
 
 /* ========== 键盘提示 ========== */
 .kb-hint{
   position:fixed;bottom:1.5rem;left:50%;
   transform:translateX(-50%);z-index:50;
-  font-size:0.55rem;letter-spacing:3px;
-  color:rgba(255,255,255,0.06);
-  font-weight:300
+  font-size:0.6rem;letter-spacing:3px;
+  color:rgba(255,255,255,0.1);
+  font-weight:300;
+  pointer-events:none
 }
 
-/* ========== 五线谱装饰 ========== */
+/* ========== 五线谱 ========== */
 .staff{
   position:relative;
   margin-bottom:2.5rem;
@@ -113,26 +102,26 @@ html,body{
 }
 .staff-line{
   height:1px;width:100%;
-  background:rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.1);
   margin-bottom:6px
 }
 .staff-line:last-child{margin-bottom:0}
 .staff-label{
-  font-size:0.5rem;letter-spacing:4px;
-  color:rgba(255,255,255,0.04);
+  font-size:0.55rem;letter-spacing:4px;
+  color:rgba(255,255,255,0.08);
   margin-top:10px;
   text-transform:uppercase;
   font-weight:300
 }
 
-/* ========== SECTION 通用 ========== */
+/* ========== SECTION ========== */
 .section-number{
-  font-size:0.55rem;letter-spacing:5px;
-  color:rgba(255,255,255,0.08);
+  font-size:0.6rem;letter-spacing:5px;
+  color:rgba(255,255,255,0.15);
   font-weight:300;margin-bottom:1rem;
   text-transform:uppercase
 }
-.section-number span{color:rgba(255,255,255,0.25)}
+.section-number span{color:rgba(255,255,255,0.35)}
 .section-title{
   font-size:clamp(2.2rem,6vw,4rem);
   font-weight:300;
@@ -143,14 +132,14 @@ html,body{
 .section-title strong{font-weight:500;color:#fff}
 .section-divider{
   width:40px;height:1px;
-  background:rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.08);
   margin:0 0 2rem 0
 }
 
 /* ========== HERO ========== */
 .hero-label{
-  font-size:0.65rem;letter-spacing:6px;
-  color:rgba(255,255,255,0.12);
+  font-size:0.7rem;letter-spacing:6px;
+  color:rgba(255,255,255,0.2);
   margin-bottom:1.5rem;
   text-transform:uppercase
 }
@@ -163,20 +152,20 @@ html,body{
   margin-bottom:0.5rem
 }
 .hero-name strong{font-weight:700;color:#fff}
-.hero-name em{font-style:normal;font-weight:200;color:rgba(255,255,255,0.15)}
+.hero-name em{font-style:normal;font-weight:200;color:rgba(255,255,255,0.2)}
 .hero-role{
   font-size:clamp(0.9rem,2vw,1.2rem);
   font-weight:300;letter-spacing:6px;
-  color:rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.2);
   margin-top:1rem
 }
 .hero-role span{
   margin:0 15px;
-  color:rgba(255,255,255,0.04);font-weight:200
+  color:rgba(255,255,255,0.08);font-weight:200
 }
 .hero-tagline{
-  font-size:clamp(0.7rem,1.2vw,0.85rem);
-  color:rgba(255,255,255,0.05);
+  font-size:clamp(0.75rem,1.2vw,0.9rem);
+  color:rgba(255,255,255,0.12);
   letter-spacing:3px;
   max-width:520px;
   margin-top:0.4rem;
@@ -185,53 +174,53 @@ html,body{
 
 /* ========== ABOUT ========== */
 .about-text{
-  font-size:0.95rem;line-height:2;
-  color:rgba(255,255,255,0.35);
+  font-size:1rem;line-height:2;
+  color:rgba(255,255,255,0.5);
   max-width:600px;font-weight:300;
   letter-spacing:1px
 }
 .about-text .hl{color:#fff;font-weight:400}
-.about-text .ac{color:rgba(255,255,255,0.6);font-weight:400}
+.about-text .ac{color:rgba(255,255,255,0.7);font-weight:400}
 
 .skill-row{
-  display:flex;flex-wrap:wrap;gap:6px;
+  display:flex;flex-wrap:wrap;gap:8px;
   margin-top:2rem;max-width:600px
 }
 .skill-item{
-  font-size:0.65rem;
-  color:rgba(255,255,255,0.08);
+  font-size:0.7rem;
+  color:rgba(255,255,255,0.15);
   letter-spacing:2px;font-weight:300;
   padding:2px 0;
   transition:color 0.3s;cursor:default
 }
-.skill-item::after{content:'·';margin-left:6px;color:rgba(255,255,255,0.03)}
+.skill-item::after{content:'·';margin-left:8px;color:rgba(255,255,255,0.05)}
 .skill-item:last-child::after{display:none}
-.skill-item:hover{color:rgba(255,255,255,0.3)}
+.skill-item:hover{color:rgba(255,255,255,0.5)}
 
-/* ========== WORKS — 时间线卡片 ========== */
+/* ========== WORKS ========== */
 .works-strip{display:flex;flex-direction:column;gap:0;margin-top:0}
 .work-entry{
   display:flex;align-items:center;
-  gap:2rem;padding:1rem 0;
+  gap:2rem;padding:1.2rem 0;
   cursor:pointer;transition:all 0.3s;
-  border-bottom:1px solid rgba(255,255,255,0.02)
+  border-bottom:1px solid rgba(255,255,255,0.03)
 }
-.work-entry:first-child{border-top:1px solid rgba(255,255,255,0.02)}
+.work-entry:first-child{border-top:1px solid rgba(255,255,255,0.03)}
 .work-entry:hover{padding-left:1rem}
 .work-year{
-  font-size:0.6rem;letter-spacing:3px;
-  color:rgba(255,255,255,0.05);
+  font-size:0.65rem;letter-spacing:3px;
+  color:rgba(255,255,255,0.12);
   min-width:55px;font-weight:300
 }
 .work-title{
-  font-size:1rem;font-weight:300;
-  letter-spacing:6px;color:rgba(255,255,255,0.5);
+  font-size:1.1rem;font-weight:300;
+  letter-spacing:6px;color:rgba(255,255,255,0.55);
   flex:1;transition:color 0.3s
 }
 .work-entry:hover .work-title{color:#fff}
 .work-tag{
-  font-size:0.55rem;letter-spacing:3px;
-  color:rgba(255,255,255,0.04);
+  font-size:0.6rem;letter-spacing:3px;
+  color:rgba(255,255,255,0.08);
   text-transform:uppercase;
   min-width:100px;text-align:right;
   font-weight:300
@@ -243,25 +232,25 @@ html,body{
 }
 .contact-item{
   display:flex;align-items:center;gap:12px;
-  padding:12px 24px;text-decoration:none;
-  border:1px solid rgba(255,255,255,0.02);
-  color:rgba(255,255,255,0.1);
-  font-size:0.8rem;letter-spacing:2px;
+  padding:14px 28px;text-decoration:none;
+  border:1px solid rgba(255,255,255,0.04);
+  color:rgba(255,255,255,0.2);
+  font-size:0.85rem;letter-spacing:2px;
   transition:all 0.3s;font-weight:300
 }
 .contact-item:hover{
   color:#fff;
-  border-color:rgba(255,255,255,0.06);
-  background:rgba(255,255,255,0.01)
+  border-color:rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.015)
 }
-.contact-item .icon{color:rgba(255,255,255,0.15);font-size:0.9rem}
+.contact-item .icon{color:rgba(255,255,255,0.2);font-size:0.9rem}
 
 /* ========== FOOTER ========== */
 .footer{
   position:relative;z-index:1;
   text-align:center;padding:1.5rem;
-  font-size:0.55rem;letter-spacing:3px;
-  color:rgba(255,255,255,0.01)
+  font-size:0.6rem;letter-spacing:3px;
+  color:rgba(255,255,255,0.02)
 }
 
 /* ========== RESPONSIVE ========== */
@@ -270,20 +259,19 @@ html,body{
   .hero-name{letter-spacing:6px}
   .work-entry{flex-wrap:wrap;gap:0.3rem}
   .work-tag{text-align:left;min-width:auto}
-  .about-text{font-size:0.85rem}
+  .about-text{font-size:0.9rem}
   .contact-strip{flex-direction:column}
   .staff{width:160px}
 }
 @media(max-width:480px){
   .hero-name{letter-spacing:3px;font-size:clamp(3rem,15vw,5rem)}
   .timeline-ruler{padding:0 1rem}
-  .timeline-mark{font-size:0.45rem}
+  .timeline-mark{font-size:0.5rem}
 }
 </style>
 </head>
 <body>
 
-<!-- ===== 顶部标尺 ===== -->
 <div class="timeline-ruler">
   <div class="timeline-marks">
     <span class="timeline-mark active" data-index="0">Hero</span>
@@ -293,13 +281,11 @@ html,body{
   </div>
 </div>
 
-<!-- ===== 播放头 ===== -->
 <div class="playhead" id="playhead"></div>
 
-<!-- ===== 水平滚动容器 ===== -->
 <div class="timeline" id="timeline">
 
-  <!-- ===== HERO ===== -->
+  <!-- HERO -->
   <section class="section" id="hero">
     <div class="staff">
       <div class="staff-lines">
@@ -311,18 +297,13 @@ html,body{
       </div>
       <p class="staff-label">— 001 —</p>
     </div>
-
     <p class="hero-label">Portfolio 2025</p>
     <h1 class="hero-name"><strong>Xa</strong><em>n</em></h1>
-    <p class="hero-role">
-      Post-Production <span>→</span> AI Film Director
-    </p>
-    <p class="hero-tagline">
-      从"脑内画面"到"可执行分镜" — 构建 AI 短片创作最短路径。
-    </p>
+    <p class="hero-role">Post-Production <span>→</span> AI Film Director</p>
+    <p class="hero-tagline">从"脑内画面"到"可执行分镜" — 构建 AI 短片创作最短路径。</p>
   </section>
 
-  <!-- ===== ABOUT ===== -->
+  <!-- ABOUT -->
   <section class="section" id="about">
     <div class="staff">
       <div class="staff-lines">
@@ -334,40 +315,24 @@ html,body{
       </div>
       <p class="staff-label">— 002 —</p>
     </div>
-
     <p class="section-number"><span>01</span> · ABOUT</p>
     <h2 class="section-title">从 <strong>后期</strong> 到 <strong>前期</strong></h2>
     <div class="section-divider"></div>
     <div class="about-text">
       <p>我是 <span class="hl">Xan</span>，从影视后期转型 AI 短片导演的创作者。</p>
-      <p style="margin-top:1rem">
-        十年后期——剪辑、调色、合成、音效。现在将镜头直觉与 AI 融合，构建
-        <span class="ac">"脑内画面"</span> → <span class="ac">"可执行分镜"</span> 的工具链。
-      </p>
+      <p style="margin-top:1rem">十年后期——剪辑、调色、合成、音效。现在将镜头直觉与 AI 融合，构建 <span class="ac">"脑内画面"</span> → <span class="ac">"可执行分镜"</span> 的工具链。</p>
       <p style="margin-top:1rem">AI 赋予每个人将想象力转化为影像的能力。</p>
     </div>
-
     <div class="skill-row">
-      <span class="skill-item">Post-Production</span>
-      <span class="skill-item">Compositing</span>
-      <span class="skill-item">Color Grading</span>
-      <span class="skill-item">Sound Design</span>
-      <span class="skill-item">AI Film Pipeline</span>
-      <span class="skill-item">Stable Diffusion</span>
-      <span class="skill-item">ComfyUI</span>
-      <span class="skill-item">Runway Gen</span>
-      <span class="skill-item">Frame Interpolation</span>
-      <span class="skill-item">Prompt Engineering</span>
-      <span class="skill-item">DaVinci Resolve</span>
-      <span class="skill-item">After Effects</span>
-      <span class="skill-item">Nuke</span>
-      <span class="skill-item">Blender</span>
-      <span class="skill-item">Python</span>
-      <span class="skill-item">Toolchain Dev</span>
+      <span class="skill-item">Post-Production</span><span class="skill-item">Compositing</span><span class="skill-item">Color Grading</span>
+      <span class="skill-item">Sound Design</span><span class="skill-item">AI Film Pipeline</span><span class="skill-item">Stable Diffusion</span>
+      <span class="skill-item">ComfyUI</span><span class="skill-item">Runway Gen</span><span class="skill-item">Frame Interpolation</span>
+      <span class="skill-item">Prompt Engineering</span><span class="skill-item">DaVinci Resolve</span><span class="skill-item">After Effects</span>
+      <span class="skill-item">Nuke</span><span class="skill-item">Blender</span><span class="skill-item">Python</span><span class="skill-item">Toolchain Dev</span>
     </div>
   </section>
 
-  <!-- ===== WORKS ===== -->
+  <!-- WORKS -->
   <section class="section" id="works">
     <div class="staff">
       <div class="staff-lines">
@@ -379,36 +344,18 @@ html,body{
       </div>
       <p class="staff-label">— 003 —</p>
     </div>
-
     <p class="section-number"><span>02</span> · WORKS</p>
     <h2 class="section-title">代表 <strong>作品</strong></h2>
     <div class="section-divider"></div>
-
     <div class="works-strip">
-      <div class="work-entry">
-        <span class="work-year">2025</span>
-        <span class="work-title">Eclipse</span>
-        <span class="work-tag">AI Short Film</span>
-      </div>
-      <div class="work-entry">
-        <span class="work-year">2025</span>
-        <span class="work-title">Neon Drizzle</span>
-        <span class="work-tag">AI Music Video</span>
-      </div>
-      <div class="work-entry">
-        <span class="work-year">2025</span>
-        <span class="work-title">SynthFrame</span>
-        <span class="work-tag">Toolchain</span>
-      </div>
-      <div class="work-entry">
-        <span class="work-year">2024</span>
-        <span class="work-title">FrameFlow</span>
-        <span class="work-tag">Research</span>
-      </div>
+      <div class="work-entry"><span class="work-year">2025</span><span class="work-title">Eclipse</span><span class="work-tag">AI Short Film</span></div>
+      <div class="work-entry"><span class="work-year">2025</span><span class="work-title">Neon Drizzle</span><span class="work-tag">AI Music Video</span></div>
+      <div class="work-entry"><span class="work-year">2025</span><span class="work-title">SynthFrame</span><span class="work-tag">Toolchain</span></div>
+      <div class="work-entry"><span class="work-year">2024</span><span class="work-title">FrameFlow</span><span class="work-tag">Research</span></div>
     </div>
   </section>
 
-  <!-- ===== CONTACT ===== -->
+  <!-- CONTACT -->
   <section class="section" id="contact">
     <div class="staff">
       <div class="staff-lines">
@@ -420,12 +367,10 @@ html,body{
       </div>
       <p class="staff-label">— 004 —</p>
     </div>
-
     <p class="section-number"><span>03</span> · CONTACT</p>
     <h2 class="section-title">Let's <strong>Connect</strong></h2>
     <div class="section-divider"></div>
-    <p style="color:rgba(255,255,255,0.08);font-size:0.8rem;margin-bottom:1rem;letter-spacing:2px;font-weight:300">聊聊 AI 影像的可能性，或者一起做点什么。</p>
-
+    <p style="color:rgba(255,255,255,0.15);font-size:0.85rem;margin-bottom:1rem;letter-spacing:2px;font-weight:300">聊聊 AI 影像的可能性，或者一起做点什么。</p>
     <div class="contact-strip">
       <a href="#" class="contact-item"><span class="icon">★</span> GitHub</a>
       <a href="#" class="contact-item"><span class="icon">✉</span> Email</a>
@@ -436,24 +381,31 @@ html,body{
 
 </div>
 
-<!-- ===== 底部进度条 ===== -->
 <div class="timeline-progress">
   <div class="timeline-progress-bar" id="progressBar"></div>
 </div>
 
-<p class="kb-hint">← 滚轮 / 方向键 左右浏览 →</p>
+<p class="kb-hint">← 滚轮上下 = 时间线左右 · 方向键也可用 →</p>
 
 <script>
 ;(function(){
   const timeline = document.getElementById('timeline');
   const marks = document.querySelectorAll('.timeline-mark');
   const progressBar = document.getElementById('progressBar');
+  const playhead = document.getElementById('playhead');
+  let isScrolling = false;
 
-  // 鼠标滚轮 → 左右滚动 (直接改 scrollLeft，浏览器原生处理)
+  // 核心：鼠标滚轮 → 时间线左右滑动
+  // 像剪辑软件一样：上下滚轮 = 时间线左右推
   timeline.addEventListener('wheel', function(e){
-    if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
-      e.preventDefault();
-      this.scrollLeft += e.deltaY * 0.8;
+    e.preventDefault();
+    const target = this.scrollLeft + e.deltaY;
+    this.scrollLeft = target;
+
+    if(!isScrolling){
+      isScrolling = true;
+      clearTimeout(this._scrollTimer);
+      this._scrollTimer = setTimeout(() => { isScrolling = false; }, 150);
     }
   }, { passive: false });
 
@@ -461,27 +413,34 @@ html,body{
   document.addEventListener('keydown', function(e){
     if(e.key === 'ArrowRight' || e.key === 'ArrowDown'){
       e.preventDefault();
-      timeline.scrollBy({ left: window.innerWidth * 0.85, behavior: 'smooth' });
+      timeline.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
     } else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){
       e.preventDefault();
-      timeline.scrollBy({ left: -window.innerWidth * 0.85, behavior: 'smooth' });
+      timeline.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
     }
   });
 
-  // 更新 UI：标尺高亮 + 进度条 + 播放头
+  // 触屏拖拽
+  let touchStartX = 0, touchStartScroll = 0;
+  timeline.addEventListener('touchstart', function(e){
+    touchStartX = e.touches[0].clientX;
+    touchStartScroll = this.scrollLeft;
+  }, { passive: true });
+  timeline.addEventListener('touchmove', function(e){
+    const dx = touchStartX - e.touches[0].clientX;
+    this.scrollLeft = touchStartScroll + dx;
+  }, { passive: true });
+
+  // 更新 UI
   function updateUI(){
     const scrollLeft = timeline.scrollLeft;
     const maxScroll = timeline.scrollWidth - timeline.clientWidth;
     const progress = maxScroll > 0 ? scrollLeft / maxScroll : 0;
 
-    // 进度条
-    progressBar.style.width = Math.max(25, Math.min(75, 25 + progress * 50)) + '%';
+    progressBar.style.width = Math.max(20, Math.min(80, 20 + progress * 60)) + '%';
 
-    // 播放头位置
-    const playhead = document.getElementById('playhead');
-    playhead.style.left = Math.max(32, scrollLeft + window.innerWidth * 0.15) + 'px';
+    playhead.style.left = Math.max(32, scrollLeft + window.innerWidth * 0.12) + 'px';
 
-    // 标尺高亮
     const sectionWidth = window.innerWidth;
     const activeIndex = Math.round(scrollLeft / sectionWidth);
     marks.forEach((m, i) => {
