@@ -26,11 +26,15 @@ html,body{
 .timeline{
   display:flex;
   height:100vh;
-  overflow-x:hidden;
-  scroll-behavior:smooth;
+  overflow-x:auto;
+  overflow-y:hidden;
   scroll-snap-type:x mandatory;
-  -webkit-overflow-scrolling:touch
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  -ms-overflow-style:none
 }
+.timeline::-webkit-scrollbar{display:none}
+
 .section{
   flex:0 0 100vw;
   height:100vh;
@@ -66,13 +70,13 @@ html,body{
 }
 .timeline-mark.active{color:rgba(255,255,255,0.5)}
 
-/* ========== 播放头（标尺下的指示线） ========== */
+/* ========== 播放头 ========== */
 .playhead{
   position:fixed;top:32px;bottom:0;
   width:1px;z-index:99;
   background:rgba(255,255,255,0.04);
   pointer-events:none;
-  transition:left 0.3s
+  transition:left 0.2s
 }
 .playhead::before{
   content:'';position:absolute;top:0;left:-3px;
@@ -107,7 +111,6 @@ html,body{
   margin-bottom:2.5rem;
   width:240px
 }
-.staff-lines{}
 .staff-line{
   height:1px;width:100%;
   background:rgba(255,255,255,0.06);
@@ -137,10 +140,7 @@ html,body{
   color:#fff;
   margin-bottom:1.5rem
 }
-.section-title strong{
-  font-weight:700;
-  opacity:0.6
-}
+.section-title strong{font-weight:500;color:#fff}
 .section-divider{
   width:40px;height:1px;
   background:rgba(255,255,255,0.06);
@@ -156,18 +156,14 @@ html,body{
 }
 .hero-name{
   font-size:clamp(4rem,12vw,8rem);
-  font-weight:300;
+  font-weight:200;
   letter-spacing:12px;
   color:#fff;
   line-height:1;
   margin-bottom:0.5rem
 }
-.hero-name strong{font-weight:700;opacity:0.7}
-.hero-name em{
-  font-style:normal;
-  font-weight:200;
-  opacity:0.15
-}
+.hero-name strong{font-weight:700;color:#fff}
+.hero-name em{font-style:normal;font-weight:200;color:rgba(255,255,255,0.15)}
 .hero-role{
   font-size:clamp(0.9rem,2vw,1.2rem);
   font-weight:300;letter-spacing:6px;
@@ -176,7 +172,7 @@ html,body{
 }
 .hero-role span{
   margin:0 15px;
-  opacity:0.05;font-weight:200
+  color:rgba(255,255,255,0.04);font-weight:200
 }
 .hero-tagline{
   font-size:clamp(0.7rem,1.2vw,0.85rem);
@@ -194,8 +190,8 @@ html,body{
   max-width:600px;font-weight:300;
   letter-spacing:1px
 }
-.about-text .hl{color:rgba(255,255,255,0.7);font-weight:400}
-.about-text .ac{color:rgba(255,255,255,0.5);font-weight:400}
+.about-text .hl{color:#fff;font-weight:400}
+.about-text .ac{color:rgba(255,255,255,0.6);font-weight:400}
 
 .skill-row{
   display:flex;flex-wrap:wrap;gap:6px;
@@ -208,7 +204,7 @@ html,body{
   padding:2px 0;
   transition:color 0.3s;cursor:default
 }
-.skill-item::after{content:'·';margin-left:6px;opacity:0.3}
+.skill-item::after{content:'·';margin-left:6px;color:rgba(255,255,255,0.03)}
 .skill-item:last-child::after{display:none}
 .skill-item:hover{color:rgba(255,255,255,0.3)}
 
@@ -258,7 +254,7 @@ html,body{
   border-color:rgba(255,255,255,0.06);
   background:rgba(255,255,255,0.01)
 }
-.contact-item .icon{opacity:0.15;font-size:0.9rem}
+.contact-item .icon{color:rgba(255,255,255,0.15);font-size:0.9rem}
 
 /* ========== FOOTER ========== */
 .footer{
@@ -452,35 +448,38 @@ html,body{
   const timeline = document.getElementById('timeline');
   const marks = document.querySelectorAll('.timeline-mark');
   const progressBar = document.getElementById('progressBar');
-  const sections = document.querySelectorAll('.section');
-  const totalSections = sections.length;
 
-  // 鼠标滚轮 → 左右滚动
+  // 鼠标滚轮 → 左右滚动 (直接改 scrollLeft，浏览器原生处理)
   timeline.addEventListener('wheel', function(e){
-    e.preventDefault();
-    this.scrollLeft += e.deltaY;
+    if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+      e.preventDefault();
+      this.scrollLeft += e.deltaY * 0.8;
+    }
   }, { passive: false });
 
   // 键盘方向键
   document.addEventListener('keydown', function(e){
-    if(e.key === 'ArrowRight'){
-      timeline.scrollLeft += window.innerWidth * 0.8;
-    } else if(e.key === 'ArrowLeft'){
-      timeline.scrollLeft -= window.innerWidth * 0.8;
+    if(e.key === 'ArrowRight' || e.key === 'ArrowDown'){
+      e.preventDefault();
+      timeline.scrollBy({ left: window.innerWidth * 0.85, behavior: 'smooth' });
+    } else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){
+      e.preventDefault();
+      timeline.scrollBy({ left: -window.innerWidth * 0.85, behavior: 'smooth' });
     }
   });
 
-  // 更新标尺高亮 + 进度条 + 播放头
+  // 更新 UI：标尺高亮 + 进度条 + 播放头
   function updateUI(){
     const scrollLeft = timeline.scrollLeft;
-    const maxScroll = timeline.scrollWidth - window.innerWidth;
+    const maxScroll = timeline.scrollWidth - timeline.clientWidth;
     const progress = maxScroll > 0 ? scrollLeft / maxScroll : 0;
-    progressBar.style.width = (25 + progress * 50) + '%';
+
+    // 进度条
+    progressBar.style.width = Math.max(25, Math.min(75, 25 + progress * 50)) + '%';
 
     // 播放头位置
     const playhead = document.getElementById('playhead');
-    // Position at ~30% from left as a visual anchor
-    playhead.style.left = (scrollLeft + window.innerWidth * 0.3) + 'px';
+    playhead.style.left = Math.max(32, scrollLeft + window.innerWidth * 0.15) + 'px';
 
     // 标尺高亮
     const sectionWidth = window.innerWidth;
