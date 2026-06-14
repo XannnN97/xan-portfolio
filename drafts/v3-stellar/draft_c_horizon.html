@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Xan · AI Short Film Director — Event Horizon</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  background:#050508;color:rgba(232,229,225,0.75);line-height:1.8;overflow-x:hidden;cursor:default;min-height:100vh
+}
+/* Near-black with central glow */
+body::before{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  z-index:-2;
+  background:#050508;background-attachment:fixed
+}
+/* Central radial glow — like a distant accretion disk */
+body::after{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  z-index:-1;
+  background:
+    radial-gradient(ellipse at 50% 30%,rgba(183,156,108,0.015) 0%,transparent 50%),
+    radial-gradient(ellipse at 50% 30%,rgba(179,136,235,0.008) 0%,transparent 60%);
+  pointer-events:none
+}
+#particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(183,156,108,0.08);border-radius:2px}
+
+/* Nav — indicator dot for active section */
+.nav{
+  position:fixed;top:0;left:0;right:0;
+  z-index:100;padding:0 2.5rem;height:72px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:transparent;transition:all 0.8s
+}
+.nav-brand{
+  font-size:1rem;font-weight:300;
+  color:rgba(232,201,160,0.3);letter-spacing:10px;text-decoration:none;
+  text-transform:uppercase
+}
+.nav-brand span{color:rgba(183,156,108,0.2)}
+.nav-links{display:flex;gap:3rem;list-style:none;align-items:center}
+.nav-links a{
+  color:rgba(232,201,160,0.1);text-decoration:none;
+  font-size:0.65rem;letter-spacing:4px;
+  transition:all 0.6s;font-weight:300;
+  text-transform:uppercase;position:relative;
+  display:flex;align-items:center;gap:8px
+}
+/* Dot indicator for active section */
+.nav-links a::before{
+  content:'';width:4px;height:4px;border-radius:50%;
+  background:rgba(183,156,108,0);
+  transition:all 0.6s
+}
+.nav-links a.active::before{background:rgba(183,156,108,0.3);box-shadow:0 0 6px rgba(183,156,108,0.06)}
+.nav-links a:hover{color:rgba(232,201,160,0.25)}
+.nav-links a.active{color:rgba(232,201,160,0.2)}
+
+/* Ring divider between sections — like a ring plane cross-section */
+.ring-divider{
+  width:100%;height:1px;position:relative;
+  margin:2rem 0 3rem;
+  overflow:visible
+}
+.ring-divider-line{width:100%;height:1px;background:rgba(183,156,108,0.03)}
+.ring-divider::after{
+  content:'';position:absolute;top:-4px;left:50%;transform:translateX(-50%);
+  width:40%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(183,156,108,0.04),transparent);
+  box-shadow:0 0 20px rgba(183,156,108,0.01)
+}
+
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  position:relative;z-index:1;padding:2rem;
+  padding-top:10vh
+}
+.hero-badge{
+  font-size:0.55rem;letter-spacing:7px;
+  color:rgba(183,156,108,0.1);text-transform:uppercase;
+  margin-bottom:3rem;font-weight:300;
+  opacity:0;animation:fadeIn 2s 0.5s forwards
+}
+.hero-name{
+  font-size:clamp(3rem,9vw,6rem);
+  font-weight:200;letter-spacing:clamp(10px,3vw,25px);
+  margin-bottom:1.5rem;
+  opacity:0;animation:fadeIn 2s 1s forwards;
+  position:relative
+}
+.hero-name span{
+  font-weight:200;
+  color:rgba(232,229,225,0.3);
+  position:relative;z-index:1
+}
+/* Gravitational lensing glow behind name */
+.hero-name::after{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:120%;height:60px;
+  background:radial-gradient(ellipse,rgba(183,156,108,0.015),rgba(179,136,235,0.008),transparent);
+  filter:blur(20px);
+  pointer-events:none
+}
+.hero-role{
+  font-size:clamp(0.85rem,1.8vw,1.05rem);
+  font-weight:200;color:rgba(232,201,160,0.15);margin-bottom:1.5rem;
+  letter-spacing:5px;
+  opacity:0;animation:fadeIn 2s 1.5s forwards
+}
+.hero-role-arrow{display:inline-block;margin:0 20px;color:rgba(183,156,108,0.1);font-weight:200}
+.hero-tagline{
+  font-size:clamp(0.8rem,1.4vw,0.9rem);
+  color:rgba(138,165,181,0.08);max-width:480px;
+  font-weight:100;line-height:2;letter-spacing:3px;
+  opacity:0;animation:fadeIn 2s 1.8s forwards
+}
+.hero-scroll{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  opacity:0;animation:fadeIn 2s 3s forwards;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:rgba(183,156,108,0.03);font-size:0.5rem;letter-spacing:6px;font-weight:100
+}
+.hero-scroll-line{width:1px;height:20px;background:linear-gradient(to bottom,rgba(183,156,108,0.05),transparent);animation:scrollBounce 3s infinite}
+
+.section{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:100px 2rem}
+.section-inner{max-width:900px;margin:0 auto;width:100%}
+.section-label{
+  font-size:0.6rem;letter-spacing:6px;
+  color:rgba(183,156,108,0.12);text-transform:uppercase;margin-bottom:0.5rem;font-weight:300
+}
+.section-title{font-size:2rem;font-weight:200;margin-bottom:2rem;color:rgba(232,229,225,0.25);letter-spacing:6px}
+.section-title strong{font-weight:300;color:rgba(183,156,108,0.2)}
+
+.about-text{font-size:0.95rem;color:rgba(138,165,181,0.18);line-height:2.2;margin-bottom:2.5rem;max-width:680px;font-weight:200;letter-spacing:1px}
+.about-text .highlight{color:rgba(232,229,225,0.3);font-weight:300}
+.about-text .accent{color:rgba(183,156,108,0.2);font-weight:300}
+
+.skills-cloud{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.5rem}
+.skill-tag{
+  padding:4px 14px;
+  border:1px solid rgba(183,156,108,0.03);border-radius:3px;
+  font-size:0.7rem;color:rgba(138,165,181,0.12);
+  transition:all 0.6s;cursor:default;font-weight:200;
+  letter-spacing:2px
+}
+.skill-tag:hover{
+  border-color:rgba(183,156,108,0.08);
+  color:rgba(232,201,160,0.15);
+  background:rgba(183,156,108,0.01)
+}
+
+.works-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2rem;margin-top:1rem}
+.work-card{
+  background:rgba(10,10,16,0.6);
+  border-radius:4px;
+  transition:all 0.6s;position:relative;cursor:pointer;
+  overflow:hidden
+}
+/* Vertical gold accent bar on left */
+.work-card::before{
+  content:'';position:absolute;top:0;left:0;width:3px;height:100%;
+  background:rgba(183,156,108,0.03);
+  transition:all 0.6s;z-index:1
+}
+.work-card:hover::before{background:rgba(183,156,108,0.12);width:3px}
+.work-card:hover .work-card-border-glow{opacity:1}
+.work-card:hover{
+  transform:translateY(-3px);
+  background:rgba(10,10,16,0.8);
+  box-shadow:0 10px 40px rgba(0,0,0,0.5)
+}
+.work-card-cover{
+  height:100px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative
+}
+.work-card-cover .cover-label{
+  font-size:1.2rem;font-weight:200;letter-spacing:12px;
+  color:rgba(232,201,160,0.02)
+}
+.work-card-cover .cover-glow{
+  position:absolute;width:80px;height:80px;border-radius:50%;
+  filter:blur(40px);opacity:0.06;transition:opacity 0.6s
+}
+.work-card:hover .cover-glow{opacity:0.15}
+.work-card-body{padding:0.8rem 1.5rem 1.5rem 1.8rem}
+.work-card-title{font-size:0.95rem;font-weight:400;color:rgba(232,201,160,0.2);margin-bottom:6px;letter-spacing:3px}
+.work-card-tag{font-size:0.55rem;color:rgba(183,156,108,0.08);letter-spacing:4px;margin-bottom:8px;text-transform:uppercase}
+.work-card-desc{font-size:0.8rem;color:rgba(138,165,181,0.12);line-height:1.7}
+
+.contact-links{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:2rem}
+.contact-btn{
+  display:inline-flex;align-items:center;gap:12px;
+  padding:16px 40px;
+  background:rgba(183,156,108,0.06);
+  border:none;
+  color:rgba(232,229,225,0.15);text-decoration:none;font-size:0.85rem;
+  transition:all 0.5s;letter-spacing:3px;font-weight:300;
+  text-transform:uppercase
+}
+.contact-btn:hover{
+  background:rgba(183,156,108,0.08);
+  color:rgba(232,229,225,0.25);
+  transform:translateY(-2px)
+}
+.contact-btn-icon{font-size:0.9rem;width:18px;text-align:center}
+
+.footer{position:relative;z-index:1;text-align:center;padding:3rem;font-size:0.5rem;color:rgba(61,61,61,0.08);letter-spacing:6px;font-weight:100}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 1.2s ease,transform 1.2s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scrollBounce{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(3px);opacity:0.2}}
+
+@media(max-width:768px){
+  .nav{padding:0 1rem;height:60px}
+  .nav-links{gap:1.5rem}.nav-links a{font-size:0.6rem;letter-spacing:2px}
+  .section{padding:80px 1.2rem;min-height:auto}
+  .section-title{font-size:1.4rem}.hero-name{letter-spacing:6px}
+  .works-grid{grid-template-columns:1fr}.contact-links{flex-direction:column}
+  .contact-btn{justify-content:center}
+}
+</style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+<nav class="nav" id="navbar"><a href="#hero" class="nav-brand">X<span>a</span>n</a>
+<ul class="nav-links"><li><a href="#about">About</a></li><li><a href="#works">Works</a></li><li><a href="#contact">Contact</a></li></ul></nav>
+
+<section class="hero" id="hero">
+  <div class="hero-badge">Director  ·  Creator</div>
+  <h1 class="hero-name"><span>Xan</span></h1>
+  <p class="hero-role">Post-Production <span class="hero-role-arrow">→</span> <strong style="color:rgba(232,201,160,0.15);font-weight:200">AI Short Film Director</strong></p>
+  <p class="hero-tagline" id="tagline"></p>
+  <div class="hero-scroll"><span>SCROLL</span><div class="hero-scroll-line"></div></div>
+</section>
+
+<section class="section" id="about"><div class="section-inner"><div class="reveal">
+  <p class="section-label">About</p>
+  <h2 class="section-title">从 后期 到 前期</h2>
+  <div class="about-text">
+    <p>我是 <span class="highlight">Xan</span>，从影视后期转型 AI 短片导演的创作者。</p>
+    <p style="margin-top:1.5rem">过去十年深耕在影视后期制作的每一个环节——剪辑、调色、合成、音效设计。现在将这份对镜头语言的直觉与 AI 生成技术融合，构建从 <span class="accent">"脑内画面"</span> 到 <span class="accent">"可执行分镜"</span> 的完整工具链。</p>
+    <p style="margin-top:1.5rem">AI 不会取代创作者，而是赋予每一个人将想象力转化为影像的能力。目标是打造那条最短的路径。</p>
+  </div>
+  <h3 style="font-weight:200;font-size:0.65rem;color:rgba(138,165,181,0.08);margin-bottom:1rem;letter-spacing:5px;text-transform:uppercase">Skill &amp; Toolchain</h3>
+  <div class="skills-cloud">
+    <span class="skill-tag">Post-Production</span><span class="skill-tag">Compositing</span><span class="skill-tag">Color Grading</span>
+    <span class="skill-tag">AI Film Pipeline</span><span class="skill-tag">Stable Diffusion</span><span class="skill-tag">ComfyUI</span>
+    <span class="skill-tag">Runway Gen</span><span class="skill-tag">Frame Interpolation</span><span class="skill-tag">Prompt Engineering</span>
+    <span class="skill-tag">DaVinci Resolve</span><span class="skill-tag">After Effects</span><span class="skill-tag">Nuke</span>
+    <span class="skill-tag">Blender</span><span class="skill-tag">Python</span><span class="skill-tag">Toolchain Development</span>
+  </div>
+</div></div></section>
+
+<div class="ring-divider"><div class="ring-divider-line"></div></div>
+
+<section class="section" id="works"><div class="section-inner">
+  <div class="reveal"><p class="section-label">Works</p><h2 class="section-title">代表 作品</h2></div>
+  <div class="works-grid">
+    <div class="work-card reveal"><div class="work-card-cover"><div class="cover-glow" style="background:#B79C6C;top:30%;left:20%"></div><div class="cover-glow" style="background:#b388eb;top:50%;left:60%"></div><span class="cover-label">ECLIPSE</span></div><div class="work-card-body"><p class="work-card-tag">AI Short Film · 2025</p><h3 class="work-card-title">Eclipse</h3><p class="work-card-desc">完全由 AI 生成的科幻短片，探索记忆与身份的意识迷宫。ComfyUI + 帧插值。</p></div></div>
+    <div class="work-card reveal"><div class="work-card-cover"><div class="cover-glow" style="background:#b388eb;top:25%;left:40%"></div><div class="cover-glow" style="background:#B79C6C;top:60%;left:30%"></div><span class="cover-label">NEON</span></div><div class="work-card-body"><p class="work-card-tag">AI Music Video · 2025</p><h3 class="work-card-title">Neon Drizzle</h3><p class="work-card-desc">赛博朋克风格 AI 音乐短片，剪辑节奏与 AI 视觉生成结合，霓虹雨夜叙事。</p></div></div>
+    <div class="work-card reveal"><div class="work-card-cover"><div class="cover-glow" style="background:#B79C6C;top:40%;left:30%"></div><div class="cover-glow" style="background:#3B8E9C;top:20%;left:60%"></div><span class="cover-label">SYNTH</span></div><div class="work-card-body"><p class="work-card-tag">Toolchain · 2025</p><h3 class="work-card-title">SynthFrame</h3><p class="work-card-desc">自研 AI 短片工具链：文本分镜到视频帧的自动化管线，集成 SD、帧插值与音频同步。</p></div></div>
+  </div>
+</div></section>
+
+<div class="ring-divider"><div class="ring-divider-line"></div></div>
+
+<section class="section" id="contact"><div class="section-inner"><div class="reveal">
+  <p class="section-label">Contact</p>
+  <h2 class="section-title">Let's  Connect</h2>
+  <p style="color:rgba(138,165,181,0.08);margin-bottom:1.5rem;font-size:0.9rem;letter-spacing:2px;font-weight:200">聊聊 AI 影像的可能性，或者一起做点什么。</p>
+  <div class="contact-links">
+    <a href="https://github.com/XannnN97" target="_blank" class="contact-btn"><span class="contact-btn-icon">★</span><span class="contact-btn-label">@XannnN97</span></a>
+    <a href="mailto:1033142216@qq.com" class="contact-btn"><span class="contact-btn-icon">✉</span><span class="contact-btn-label">1033142216@qq.com</span></a>
+  </div>
+</div></div></section>
+
+<footer class="footer"><p>© 2025 Xan · Built with intention</p></footer>
+
+<script>
+// Accretion disk particles — orbiting around page center
+;(function(){
+  var c=document.getElementById('particle-canvas'),ctx=c.getContext('2d');
+  var p=[],W,H;
+  function resize(){
+    W=c.width=window.innerWidth;H=c.height=window.innerHeight;
+    var n=Math.min(Math.floor(W*0.2),W<600?60:130);p=[];
+    for(var i=0;i<n;i++){
+      var angle=Math.random()*6.28,radius=Math.random()*Math.min(W,H)*0.5+20;
+      p.push({
+        cx:W/2,cy:H*0.35,
+        r:radius,a:angle,
+        speed:(0.0003+Math.random()*0.0008)*(1-radius/(Math.min(W,H)*0.5)),
+        s:Math.random()*1.5+0.2,al:0.03+Math.random()*0.06,
+        hue:Math.random()<0.6?35+Math.random()*30:240+Math.random()*60
+      });
+    }
+  }
+  window.addEventListener('resize',resize);
+  function anim(){
+    ctx.clearRect(0,0,W,H);
+    var sy=window.pageYOffset||document.documentElement.scrollTop||0;
+    var sr=Math.min(sy/(document.documentElement.scrollHeight-window.innerHeight),1);
+    for(var i=0;i<p.length;i++){
+      var s=p[i];s.a+=s.speed;
+      var x=s.cx+Math.cos(s.a)*s.r,y=s.cy+Math.sin(s.a)*s.r;
+      // Flatten orbit — more elliptical, like accretion disk
+      y=y*0.6+s.cy*0.4;
+      var fade=1-(s.r/(Math.min(W,H)*0.5))*0.5*sr;if(fade<0)fade=0;
+      var tw=0.7+0.3*Math.sin(Date.now()*0.001+s.a);
+      var al=s.al*tw*fade;if(al<0.002)continue;
+      ctx.beginPath();ctx.arc(x,y,s.s,0,6.28);
+      ctx.fillStyle='hsla('+s.hue+',40%,55%,'+al+')';ctx.fill();
+    }
+    requestAnimationFrame(anim);
+  }
+  resize();anim();
+})();
+
+;(function(){var el=document.getElementById('tagline'),t='从影视后期到 AI 短片导演 — 构建想象到影像的最短路径。',i=0;el.textContent='';function ty(){if(i<t.length){el.textContent+=t.charAt(i);i++;setTimeout(ty,60+Math.random()*50);}}setTimeout(ty,2500);})();
+;(function(){var r=document.querySelectorAll('.reveal');if(!('IntersectionObserver'in window)){for(var x=0;x<r.length;x++)r[x].classList.add('visible');return;}var o=new IntersectionObserver(function(e){for(var x=0;x<e.length;x++){if(e[x].isIntersecting){e[x].target.classList.add('visible');o.unobserve(e[x].target);}}},{threshold:0.1});for(var x=0;x<r.length;x++)o.observe(r[x]);})();
+;(function(){var s=document.querySelectorAll('.section,.hero'),l=document.querySelectorAll('.nav-links a');var o=new IntersectionObserver(function(e){for(var x=0;x<e.length;x++){if(e[x].isIntersecting){var id=e[x].target.id;for(var y=0;y<l.length;y++){var a=l[y];a.classList.toggle('active',a.getAttribute('href')==='#'+id);}}}}},{threshold:0.3});for(var x=0;x<s.length;x++)o.observe(s[x]);})();
+</script>
+</body>
+</html>

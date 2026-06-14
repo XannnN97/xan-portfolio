@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Xan · AI Short Film Director — Neon Singularity</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  background:#0a0a0a;color:rgba(232,229,225,0.6);line-height:1.8;overflow-x:hidden;cursor:default;min-height:100vh
+}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;z-index:-2;background:#0a0a0a;background-attachment:fixed}
+/* Scanline overlay */
+body::after{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  z-index:-1;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.005) 2px,rgba(255,255,255,0.005) 4px);
+  pointer-events:none
+}
+#particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,45,120,0.12);border-radius:0}
+
+/* Diagonal circuit-like dividers */
+.section-divider{
+  position:relative;z-index:1;height:60px;overflow:hidden;
+  margin:-30px 0
+}
+.section-divider::before{
+  content:'';position:absolute;top:50%;left:-2%;right:-2%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,45,120,0.04),transparent);
+  transform:rotate(-2deg)
+}
+
+.nav{
+  position:fixed;top:0;left:0;right:0;
+  z-index:100;padding:0 2rem;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:transparent;transition:all 0.5s
+}
+.nav.scrolled{background:rgba(10,10,10,0.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.nav-brand{
+  font-size:1rem;font-weight:800;
+  letter-spacing:6px;text-decoration:none;
+  background:linear-gradient(135deg,#ff2d78,#3B8E9C);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text
+}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{
+  color:rgba(232,229,225,0.1);text-decoration:none;
+  font-size:0.68rem;letter-spacing:4px;
+  transition:all 0.4s;font-weight:400;position:relative;text-transform:uppercase
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-2px;left:50%;
+  width:0;height:2px;background:#ff2d78;
+  transition:all 0.4s;transform:translateX(-50%)
+}
+.nav-links a.active::after{width:100%}
+.nav-links a:hover{color:rgba(232,229,225,0.25)}
+
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  position:relative;z-index:1;padding:2rem
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:0.55rem;letter-spacing:7px;
+  color:rgba(255,45,120,0.2);text-transform:uppercase;
+  margin-bottom:3rem;font-weight:400;
+  opacity:0;animation:fadeUp 0.6s 0.3s forwards
+}
+.hero-badge-dot{width:3px;height:3px;background:#ff2d78;box-shadow:0 0 8px rgba(255,45,120,0.15);animation:pulseDot 1.5s infinite}
+.hero-name{
+  font-size:clamp(3.5rem,10vw,6rem);
+  font-weight:800;letter-spacing:6px;
+  margin-bottom:1.5rem;position:relative;
+  opacity:0;animation:fadeUp 0.6s 0.6s forwards
+}
+.hero-name span{
+  font-weight:800;
+  background:linear-gradient(135deg,#ff2d78,#3B8E9C);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:none
+}
+/* Glitch effect pseudo */
+.hero-name::before{
+  content:attr(data-text);position:absolute;
+  top:-1px;left:-1px;width:100%;height:100%;
+  background:linear-gradient(135deg,#ff2d78,transparent);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:0.04;
+  clip-path:inset(20% 0 40% 0);
+  animation:glitch1 3s infinite
+}
+.hero-name::after{
+  content:attr(data-text);position:absolute;
+  top:1px;left:2px;width:100%;height:100%;
+  background:linear-gradient(135deg,transparent,#3B8E9C);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:0.04;
+  clip-path:inset(50% 0 10% 0);
+  animation:glitch2 3s infinite
+}
+.hero-role{
+  font-size:clamp(0.85rem,2vw,1.1rem);
+  font-weight:300;color:rgba(232,229,225,0.15);margin-bottom:0.5rem;
+  letter-spacing:4px;
+  opacity:0;animation:fadeUp 0.6s 1s forwards
+}
+.hero-role .np{color:rgba(255,45,120,0.25)}
+.hero-role-arrow{display:inline-block;margin:0 15px;color:rgba(59,142,156,0.15)}
+.hero-tagline{
+  font-size:clamp(0.8rem,1.4vw,0.9rem);
+  color:rgba(232,229,225,0.06);max-width:480px;
+  font-weight:200;letter-spacing:3px;
+  opacity:0;animation:fadeUp 0.6s 1.3s forwards
+}
+.hero-scroll{
+  position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
+  opacity:0;animation:fadeUp 0.6s 2s forwards;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:rgba(255,45,120,0.03);font-size:0.45rem;letter-spacing:6px;font-weight:300
+}
+.hero-scroll-line{width:1px;height:15px;background:linear-gradient(to bottom,rgba(255,45,120,0.05),transparent);animation:scrollBounce 2s infinite}
+
+.section{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:100px 2rem}
+.section-inner{max-width:900px;margin:0 auto;width:100%}
+.section-label{
+  font-size:0.55rem;letter-spacing:6px;
+  color:rgba(255,45,120,0.12);text-transform:uppercase;margin-bottom:0.5rem;font-weight:400
+}
+.section-title{font-size:2rem;font-weight:700;margin-bottom:2rem;color:rgba(232,229,225,0.2);letter-spacing:4px}
+.section-title strong{background:linear-gradient(135deg,#ff2d78,#3B8E9C);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:800}
+
+.about-text{font-size:0.95rem;color:rgba(138,165,181,0.15);line-height:2.2;margin-bottom:2.5rem;max-width:680px;font-weight:300}
+.about-text .highlight{color:rgba(232,229,225,0.25);font-weight:400}
+.about-text .accent{color:rgba(255,45,120,0.2);font-weight:400}
+
+.skills-cloud{display:flex;flex-wrap:wrap;gap:8px;margin-top:0.5rem}
+.skill-tag{
+  padding:5px 16px;
+  border:1px solid rgba(255,45,120,0.04);border-radius:2px;
+  font-size:0.7rem;color:rgba(232,229,225,0.08);
+  transition:all 0.4s;cursor:default;font-weight:400;
+  letter-spacing:2px;background:transparent;text-transform:uppercase
+}
+.skill-tag:hover{
+  background:rgba(255,45,120,0.1);
+  color:rgba(232,229,225,0.3);
+  border-color:rgba(255,45,120,0.15);
+  transform:translateY(-2px);
+  box-shadow:0 0 12px rgba(255,45,120,0.02)
+}
+
+.works-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem}
+.work-card{
+  background:rgba(0,0,0,0.4);
+  border:1px solid rgba(255,45,120,0.02);
+  transition:all 0.5s;position:relative;cursor:pointer;overflow:hidden
+}
+/* Pink diagonal corner accent */
+.work-card::before{
+  content:'';position:absolute;top:0;right:0;
+  width:50px;height:1px;
+  background:rgba(255,45,120,0.04);
+  transform:rotate(-45deg) translate(15px,-5px);
+  transform-origin:right top;
+  transition:all 0.5s
+}
+/* Bottom neon blue bar */
+.work-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:0;
+  background:linear-gradient(90deg,transparent,rgba(59,142,156,0.02),transparent);
+  transition:height 0.5s
+}
+.work-card:hover::after{height:2px}
+.work-card:hover{
+  background:rgba(0,0,0,0.6);
+  transform:translateY(-3px);
+  border-color:rgba(255,45,120,0.04);
+  box-shadow:0 8px 30px rgba(0,0,0,0.5)
+}
+.work-card-cover{height:110px;display:flex;align-items:center;justify-content:center;position:relative}
+.work-card-cover .cover-label{font-size:1.3rem;font-weight:700;letter-spacing:10px;color:rgba(232,229,225,0.01)}
+.work-card-cover .cover-glow{position:absolute;width:100px;height:100px;border-radius:50%;filter:blur(45px);opacity:0.04;transition:opacity 0.5s}
+.work-card:hover .cover-glow{opacity:0.12}
+.work-card-body{padding:0.8rem 1.5rem 1.5rem}
+.work-card-title{font-size:0.9rem;font-weight:600;color:rgba(232,229,225,0.15);margin-bottom:4px;letter-spacing:2px}
+.work-card-tag{font-size:0.55rem;color:rgba(255,45,120,0.1);letter-spacing:4px;margin-bottom:8px;text-transform:uppercase}
+.work-card-desc{font-size:0.8rem;color:rgba(138,165,181,0.1);line-height:1.7}
+
+.contact-links{display:flex;flex-wrap:wrap;gap:1.2rem;margin-top:2rem}
+.contact-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:14px 34px;
+  border:1px solid rgba(255,45,120,0.04);
+  color:rgba(232,229,225,0.1);text-decoration:none;font-size:0.8rem;
+  transition:all 0.5s;letter-spacing:3px;font-weight:400;
+  text-transform:uppercase
+}
+.contact-btn:hover{
+  border-color:rgba(255,45,120,0.08);
+  background:linear-gradient(135deg,rgba(255,45,120,0.03),rgba(59,142,156,0.03));
+  color:rgba(232,229,225,0.2)
+}
+.contact-btn-icon{font-size:0.9rem;width:18px;text-align:center}
+
+.footer{position:relative;z-index:1;text-align:center;padding:3rem;font-size:0.5rem;color:rgba(61,61,61,0.06);letter-spacing:8px;font-weight:100}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:0.1}}
+@keyframes scrollBounce{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(3px);opacity:0.2}}
+@keyframes glitch1{0%,90%,100%{opacity:0.04}92%{opacity:0.12;transform:translate(-2px,-1px)}94%{opacity:0.04}}
+@keyframes glitch2{0%,85%,100%{opacity:0.04}87%{opacity:0.1;transform:translate(2px,1px)}89%{opacity:0.04}}
+
+@media(max-width:768px){
+  .nav{padding:0 1rem}.nav-links{gap:1rem}.nav-links a{font-size:0.6rem;letter-spacing:2px}
+  .section{padding:80px 1.2rem;min-height:auto}
+  .section-title{font-size:1.5rem}.hero-name{font-size:clamp(2.5rem,6vw,4rem)}
+  .works-grid{grid-template-columns:1fr}.contact-links{flex-direction:column}
+  .contact-btn{justify-content:center}
+}
+</style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+<nav class="nav" id="navbar"><a href="#hero" class="nav-brand">XAN</a>
+<ul class="nav-links"><li><a href="#about">About</a></li><li><a href="#works">Works</a></li><li><a href="#contact">Contact</a></li></ul></nav>
+
+<section class="hero" id="hero">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Director  ·  Creator</div>
+  <h1 class="hero-name" data-text="Xan"><span>Xan</span></h1>
+  <p class="hero-role"><span class="np">Post-Production</span> <span class="hero-role-arrow">→</span> <strong style="color:rgba(232,229,225,0.15);font-weight:300">AI Short Film Director</strong></p>
+  <p class="hero-tagline" id="tagline"></p>
+  <div class="hero-scroll"><span>SCROLL</span><div class="hero-scroll-line"></div></div>
+</section>
+
+<div class="section-divider"></div>
+
+<section class="section" id="about"><div class="section-inner"><div class="reveal">
+  <p class="section-label">// ABOUT</p>
+  <h2 class="section-title">从 <strong>后期</strong> 到 <strong>前期</strong></h2>
+  <div class="about-text">
+    <p>我是 <span class="highlight">Xan</span>，从影视后期转型 AI 短片导演的创作者。</p>
+    <p style="margin-top:1.5rem">过去十年深耕在影视后期制作的每一个环节——剪辑、调色、合成、音效设计。现在将这份对镜头语言的直觉与 AI 生成技术融合，构建从 <span class="accent">"脑内画面"</span> 到 <span class="accent">"可执行分镜"</span> 的完整工具链。</p>
+    <p style="margin-top:1.5rem">AI 不会取代创作者，而是赋予每一个人将想象力转化为影像的能力。目标是打造那条最短的路径。</p>
+  </div>
+  <h3 style="font-weight:400;font-size:0.6rem;color:rgba(138,165,181,0.08);margin-bottom:1rem;letter-spacing:5px;text-transform:uppercase">// Skill_Stack</h3>
+  <div class="skills-cloud">
+    <span class="skill-tag">Post-Production</span><span class="skill-tag">Compositing</span><span class="skill-tag">Color Grading</span>
+    <span class="skill-tag">AI Film Pipeline</span><span class="skill-tag">Stable Diffusion</span><span class="skill-tag">ComfyUI</span>
+    <span class="skill-tag">Runway Gen</span><span class="skill-tag">DaVinci Resolve</span><span class="skill-tag">After Effects</span>
+    <span class="skill-tag">Nuke</span><span class="skill-tag">Blender</span><span class="skill-tag">Python</span>
+  </div>
+</div></div></section>
+
+<div class="section-divider"></div>
+
+<section class="section" id="works"><div class="section-inner">
+  <div class="reveal"><p class="section-label">// WORKS</p><h2 class="section-title">代表 <strong>作品</strong></h2></div>
+  <div class="works-grid">
+    <div class="work-card reveal"><div class="work-card-cover"><div class="cover-glow" style="background:#ff2d78;top:30%;left:20%"></div><div class="cover-glow" style="background:#3B8E9C;top:50%;left:60%"></div><span class="cover-label">ECLIPSE</span></div><div class="work-card-body"><p class="work-card-tag">AI SHORT FILM // 2025</p><h3 class="work-card-title">Eclipse</h3><p class="work-card-desc">完全由 AI 生成的科幻短片，探索记忆与身份的意识迷宫。ComfyUI + 帧插值。</p></div></div>
+    <div class="work-card reveal"><div class="work-card-cover"><div class="cover-glow" style="background:#3B8E9C;top:25%;left:40%"></div><div class="cover-glow" style="background:#ff2d78;top:60%;left:30%"></div><span class="cover-label">NEON</span></div><div class="work-card-body"><p class="work-card-tag">AI MUSIC VIDEO // 2025</p><h3 class="work-card-title">Neon Drizzle</h3><p class="work-card-desc">赛博朋克风格 AI 音乐短片，剪辑节奏与 AI 视觉生成结合，霓虹雨夜叙事。</p></div></div>
+    <div class="work-card reveal"><div class="work-card-cover"><div class="cover-glow" style="background:#ff2d78;top:40%;left:30%"></div><div class="cover-glow" style="background:#3B8E9C;top:20%;left:60%"></div><span class="cover-label">SYNTH</span></div><div class="work-card-body"><p class="work-card-tag">TOOLCHAIN // 2025</p><h3 class="work-card-title">SynthFrame</h3><p class="work-card-desc">自研 AI 短片工具链：文本分镜到视频帧的自动化管线，集成 SD、帧插值与音频同步。</p></div></div>
+  </div>
+</div></section>
+
+<div class="section-divider"></div>
+
+<section class="section" id="contact"><div class="section-inner"><div class="reveal">
+  <p class="section-label">// CONTACT</p>
+  <h2 class="section-title">Let's <strong>Connect</strong></h2>
+  <p style="color:rgba(138,165,181,0.08);margin-bottom:1rem;font-size:0.85rem;font-weight:300;letter-spacing:2px">聊聊 AI 影像的可能性，或者一起做点什么。</p>
+  <div class="contact-links">
+    <a href="https://github.com/XannnN97" target="_blank" class="contact-btn"><span class="contact-btn-icon">★</span><span class="contact-btn-label">@XannnN97</span></a>
+    <a href="mailto:1033142216@qq.com" class="contact-btn"><span class="contact-btn-icon">✉</span><span class="contact-btn-label">1033142216@qq.com</span></a>
+  </div>
+</div></div></section>
+
+<footer class="footer"><p>© 2025 XAN // BUILT_WITH_INTENTION</p></footer>
+
+<script>
+// Neon particles — pink + blue, shooting upward with tails
+;(function(){
+  var c=document.getElementById('particle-canvas'),ctx=c.getContext('2d');
+  var p=[],W,H;
+  function resize(){
+    W=c.width=window.innerWidth;H=c.height=window.innerHeight;
+    var n=Math.min(Math.floor(W*0.25),W<600?60:140);p=[];
+    for(var i=0;i<n;i++)p.push({
+      x:Math.random()*W,y:H+Math.random()*200,
+      vx:(Math.random()-0.5)*0.02,vy:-(0.15+Math.random()*0.35),
+      s:Math.random()*2+0.3,a:0.04+Math.random()*0.06,
+      hue:Math.random()<0.6?340:190, // 340=pink, 190=cyan
+      tx:[],ty:[],tl:8
+    });
+  }
+  window.addEventListener('resize',resize);
+  function anim(){
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<p.length;i++){
+      var s=p[i];s.x+=s.vx;s.y+=s.vy;
+      s.vy*=0.999;
+      s.tx.push(s.x);s.ty.push(s.y);if(s.tx.length>s.tl){s.tx.shift();s.ty.shift();}
+      if(s.y<-50){s.y=H+Math.random()*100;s.x=Math.random()*W;s.tx=[];s.ty=[];}
+      if(s.x<-10)s.x=W+10;if(s.x>W+10)s.x=-10;
+      var fade=1-(H-s.y)/H;if(fade>1)fade=1;if(fade<0)fade=0;
+      var al=s.a*fade;if(al<0.002)continue;
+      // Trail
+      for(var t=0;t<s.tx.length;t++){var tr=t/s.tl;ctx.beginPath();ctx.arc(s.tx[t],s.ty[t],s.s*tr*0.5,0,6.28);ctx.fillStyle='hsla('+s.hue+',80%,55%,'+(s.a*tr*0.12)+')';ctx.fill();}
+      ctx.beginPath();ctx.arc(s.x,s.y,s.s,0,6.28);ctx.fillStyle='hsla('+s.hue+',80%,60%,'+al+')';ctx.fill();
+      ctx.beginPath();ctx.arc(s.x,s.y,s.s*2.5,0,6.28);ctx.fillStyle='hsla('+s.hue+',80%,60%,'+(al*0.06)+')';ctx.fill();
+    }
+    requestAnimationFrame(anim);
+  }
+  resize();anim();
+})();
+
+;(function(){var el=document.getElementById('tagline'),t='从影视后期到 AI 短片导演 — 构建想象到影像的最短路径。',i=0;el.textContent='';function ty(){if(i<t.length){el.textContent+=t.charAt(i);i++;setTimeout(ty,30+Math.random()*20);}}setTimeout(ty,1500);})();
+;(function(){var r=document.querySelectorAll('.reveal');if(!('IntersectionObserver'in window)){for(var x=0;x<r.length;x++)r[x].classList.add('visible');return;}var o=new IntersectionObserver(function(e){for(var x=0;x<e.length;x++){if(e[x].isIntersecting){e[x].target.classList.add('visible');o.unobserve(e[x].target);}}},{threshold:0.1});for(var x=0;x<r.length;x++)o.observe(r[x]);})();
+;(function(){var s=document.querySelectorAll('.section,.hero'),l=document.querySelectorAll('.nav-links a');var o=new IntersectionObserver(function(e){for(var x=0;x<e.length;x++){if(e[x].isIntersecting){var id=e[x].target.id;for(var y=0;y<l.length;y++){var a=l[y];a.classList.toggle('active',a.getAttribute('href')==='#'+id);a.style.color=a.getAttribute('href')==='#'+id?'rgba(232,229,225,0.2)':'rgba(232,229,225,0.1)';}}}},{threshold:0.3});for(var x=0;x<s.length;x++)o.observe(s[x]);})();
+;(function(){var nav=document.getElementById('navbar');window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>80);});})();
+</script>
+</body>
+</html>

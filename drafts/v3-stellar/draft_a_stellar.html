@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Xan · AI Short Film Director — Stellar Drift</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  background:#0a0e1a;color:rgba(232,229,225,0.7);line-height:1.8;overflow-x:hidden;cursor:default;min-height:100vh
+}
+/* Slow radial breathing gradient */
+body::before{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  z-index:-2;
+  background:radial-gradient(ellipse at 50% 40%,#1a1a2e 0%,#0a0e1a 50%,#060810 100%);
+  background-attachment:fixed
+}
+/* Micro-noise texture for depth */
+body::after{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  z-index:-1;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+  pointer-events:none
+}
+#particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(183,156,108,0.15);border-radius:2px}
+
+/* Nav — invisible, only text-shadow on scroll */
+.nav{
+  position:fixed;top:0;left:0;right:0;
+  z-index:100;padding:0 2.5rem;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:transparent;transition:all 0.8s
+}
+.nav.scrolled .nav-brand{text-shadow:0 0 20px rgba(183,156,108,0.06)}
+.nav.scrolled .nav-links a{text-shadow:0 0 15px rgba(232,201,160,0.03)}
+.nav-brand{
+  font-size:1rem;font-weight:300;
+  color:rgba(232,201,160,0.6);letter-spacing:8px;text-decoration:none;
+  transition:text-shadow 0.8s
+}
+.nav-brand span{color:rgba(183,156,108,0.4)}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{
+  color:rgba(232,201,160,0.15);text-decoration:none;
+  font-size:0.7rem;letter-spacing:3px;
+  transition:all 0.5s;font-weight:300;
+  position:relative
+}
+.nav-links a:hover{color:rgba(232,201,160,0.35)}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-2px;left:50%;
+  width:0;height:1px;background:rgba(183,156,108,0.15);
+  transition:all 0.5s;transform:translateX(-50%)
+}
+.nav-links a:hover::after{width:40%}
+
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  position:relative;z-index:1;padding:2rem
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:0.6rem;letter-spacing:6px;
+  color:rgba(183,156,108,0.2);text-transform:uppercase;
+  margin-bottom:3rem;font-weight:300;
+  opacity:0;animation:fadeUp 1.2s 0.3s forwards
+}
+.hero-badge-dot{width:3px;height:3px;border-radius:50%;background:rgba(183,156,108,0.2);animation:pulseDot 4s infinite}
+.hero-name{
+  font-size:clamp(3rem,7vw,5.5rem);
+  font-weight:100;letter-spacing:clamp(8px,2vw,20px);
+  color:rgba(232,229,225,0.5);margin-bottom:2rem;
+  opacity:0;animation:fadeUp 1.2s 0.6s forwards
+}
+.hero-name span{
+  font-weight:400;
+  background:linear-gradient(135deg,rgba(183,156,108,0.5),rgba(232,201,160,0.4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text
+}
+/* Fine golden divider line */
+.hero-divider{
+  width:60px;height:1px;
+  background:rgba(183,156,108,0.15);
+  margin-bottom:2rem;
+  opacity:0;animation:fadeUp 1.2s 0.9s forwards
+}
+.hero-role{
+  font-size:clamp(0.85rem,1.8vw,1.1rem);
+  font-weight:200;color:rgba(232,201,160,0.35);margin-bottom:0.5rem;
+  letter-spacing:4px;
+  opacity:0;animation:fadeUp 1.2s 1s forwards
+}
+.hero-role-arrow{display:inline-block;margin:0 20px;color:rgba(183,156,108,0.2);font-weight:200}
+.hero-tagline{
+  font-size:clamp(0.8rem,1.4vw,0.95rem);
+  color:rgba(138,165,181,0.25);max-width:520px;
+  font-weight:200;letter-spacing:3px;line-height:2;
+  opacity:0;animation:fadeUp 1.2s 1.2s forwards
+}
+.hero-scroll{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  opacity:0;animation:fadeUp 1.2s 2s forwards;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  color:rgba(183,156,108,0.08);font-size:0.55rem;letter-spacing:5px;font-weight:200
+}
+.hero-scroll-line{width:1px;height:25px;background:linear-gradient(to bottom,rgba(183,156,108,0.1),transparent);animation:scrollBounce 3s infinite}
+
+.section{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:100px 2rem}
+.section-inner{max-width:900px;margin:0 auto;width:100%}
+.section-label{
+  font-size:0.6rem;letter-spacing:5px;
+  color:rgba(183,156,108,0.2);text-transform:uppercase;margin-bottom:1.5rem;font-weight:300
+}
+.section-title{font-size:2rem;font-weight:200;margin-bottom:2.5rem;color:rgba(232,229,225,0.4);letter-spacing:4px}
+.section-title strong{font-weight:400;color:rgba(183,156,108,0.3)}
+
+.about-text{font-size:0.95rem;color:rgba(138,165,181,0.35);line-height:2.2;margin-bottom:3rem;max-width:680px;font-weight:300;letter-spacing:1px}
+.about-text .highlight{color:rgba(232,229,225,0.5);font-weight:400}
+.about-text .accent{color:rgba(183,156,108,0.4);font-weight:300}
+
+.skills-cloud{display:flex;flex-wrap:wrap;gap:8px;margin-top:0.5rem}
+.skill-tag{
+  padding:5px 18px;
+  border:1px solid rgba(183,156,108,0.06);border-radius:20px;
+  font-size:0.75rem;color:rgba(138,165,181,0.2);
+  transition:all 0.6s;cursor:default;font-weight:300;
+  letter-spacing:1px
+}
+.skill-tag:hover{
+  border-color:rgba(183,156,108,0.15);
+  color:rgba(232,201,160,0.3);
+  background:rgba(183,156,108,0.02)
+}
+
+.works-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2rem;margin-top:1rem}
+.work-card{
+  background:transparent;
+  border:1px solid rgba(183,156,108,0.04);border-radius:8px;
+  transition:all 0.6s;position:relative;cursor:pointer;padding:1.5rem
+}
+.work-card:hover{
+  border-color:rgba(183,156,108,0.12);
+  box-shadow:0 0 30px rgba(183,156,108,0.02),inset 0 0 30px rgba(183,156,108,0.01);
+  transform:translateY(-3px)
+}
+.work-card-cover{height:100px;display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:1rem}
+.work-card-cover .cover-label{font-size:1.4rem;font-weight:200;letter-spacing:10px;color:rgba(232,201,160,0.04)}
+.work-card-cover .cover-glow{position:absolute;width:100px;height:100px;border-radius:50%;filter:blur(50px);opacity:0.08;transition:opacity 0.6s}
+.work-card:hover .cover-glow{opacity:0.2}
+.work-card-title{font-size:0.95rem;font-weight:400;color:rgba(232,201,160,0.35);margin-bottom:6px;letter-spacing:2px}
+.work-card-tag{font-size:0.6rem;color:rgba(183,156,108,0.15);letter-spacing:3px;margin-bottom:10px;text-transform:uppercase}
+.work-card-desc{font-size:0.8rem;color:rgba(138,165,181,0.2);line-height:1.7;letter-spacing:0.5px}
+
+.contact-links{display:flex;flex-wrap:wrap;gap:2rem;margin-top:2rem}
+.contact-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:0.8rem;color:rgba(138,165,181,0.2);text-decoration:none;
+  transition:all 0.5s;letter-spacing:2px;font-weight:300;
+  padding:4px 0;border-bottom:1px solid transparent
+}
+.contact-btn:hover{color:rgba(183,156,108,0.3);border-bottom-color:rgba(183,156,108,0.08)}
+.contact-btn-icon{font-size:1rem;width:20px;text-align:center}
+
+.footer{position:relative;z-index:1;text-align:center;padding:3rem;font-size:0.55rem;color:rgba(61,61,61,0.15);letter-spacing:5px;font-weight:100}
+
+.reveal{opacity:0;transform:translateY(25px);transition:opacity 1s ease,transform 1s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:0.1}}
+@keyframes scrollBounce{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(4px);opacity:0.2}}
+
+@media(max-width:768px){
+  .nav{padding:0 1rem}.nav-links{gap:1.5rem}.nav-links a{font-size:0.65rem;letter-spacing:2px}
+  .section{padding:80px 1.2rem;min-height:auto}
+  .section-title{font-size:1.4rem}
+  .hero-name{letter-spacing:6px}
+  .works-grid{grid-template-columns:1fr;gap:1.5rem}
+  .contact-links{flex-direction:column;gap:1.5rem}
+  .about-text{font-size:0.9rem}
+}
+</style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+<nav class="nav" id="navbar"><a href="#hero" class="nav-brand">X<span>a</span>n</a>
+<ul class="nav-links"><li><a href="#about">About</a></li><li><a href="#works">Works</a></li><li><a href="#contact">Contact</a></li></ul></nav>
+
+<section class="hero" id="hero">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Director · Creator</div>
+  <h1 class="hero-name"><span>Xan</span></h1>
+  <div class="hero-divider"></div>
+  <p class="hero-role">Post-Production <span class="hero-role-arrow">→</span> AI Short Film Director</p>
+  <p class="hero-tagline" id="tagline"></p>
+  <div class="hero-scroll"><span>SCROLL</span><div class="hero-scroll-line"></div></div>
+</section>
+
+<section class="section" id="about"><div class="section-inner"><div class="reveal">
+  <p class="section-label">About</p>
+  <h2 class="section-title">从 后期 到 前期</h2>
+  <div class="about-text">
+    <p>我是 <span class="highlight">Xan</span>，从影视后期转型 AI 短片导演的创作者。</p>
+    <p style="margin-top:1.5rem">过去十年深耕在影视后期制作的每一个环节——剪辑、调色、合成、音效设计。现在将这份对镜头语言的直觉与 AI 生成技术融合，构建从 <span class="accent">"脑内画面"</span> 到 <span class="accent">"可执行分镜"</span> 的完整工具链。</p>
+    <p style="margin-top:1.5rem">AI 不会取代创作者，而是赋予每一个人将想象力转化为影像的能力。目标是打造那条最短的路径。</p>
+  </div>
+  <h3 style="font-weight:200;font-size:0.7rem;color:rgba(138,165,181,0.15);margin-bottom:1.2rem;letter-spacing:4px;text-transform:uppercase">Skill &amp; Toolchain</h3>
+  <div class="skills-cloud">
+    <span class="skill-tag">Post-Production</span><span class="skill-tag">Compositing</span><span class="skill-tag">Color Grading</span>
+    <span class="skill-tag">AI Film Pipeline</span><span class="skill-tag">Stable Diffusion</span><span class="skill-tag">ComfyUI</span>
+    <span class="skill-tag">Runway Gen</span><span class="skill-tag">Frame Interpolation</span><span class="skill-tag">Prompt Engineering</span>
+    <span class="skill-tag">DaVinci Resolve</span><span class="skill-tag">After Effects</span><span class="skill-tag">Nuke</span>
+    <span class="skill-tag">Blender</span><span class="skill-tag">Python</span><span class="skill-tag">Toolchain Development</span>
+  </div>
+</div></div></section>
+
+<section class="section" id="works"><div class="section-inner">
+  <div class="reveal"><p class="section-label">Works</p><h2 class="section-title">代表 作品</h2></div>
+  <div class="works-grid">
+    <div class="work-card reveal"><div class="work-card-cover"><div class="cover-glow" style="background:#B79C6C;top:30%;left:20%"></div><div class="cover-glow" style="background:#3B8E9C;top:50%;left:60%"></div><span class="cover-label">ECLIPSE</span></div><p class="work-card-tag">AI Short Film · 2025</p><h3 class="work-card-title">Eclipse</h3><p class="work-card-desc">完全由 AI 生成的科幻短片，探索记忆与身份的意识迷宫。ComfyUI + 帧插值。</p></div>
+    <div class="work-card reveal"><div class="work-card-cover"><div class="cover-glow" style="background:#3B8E9C;top:25%;left:40%"></div><div class="cover-glow" style="background:#B79C6C;top:60%;left:30%"></div><span class="cover-label">NEON</span></div><p class="work-card-tag">AI Music Video · 2025</p><h3 class="work-card-title">Neon Drizzle</h3><p class="work-card-desc">赛博朋克风格 AI 音乐短片，剪辑节奏与 AI 视觉生成结合，霓虹雨夜叙事。</p></div>
+    <div class="work-card reveal"><div class="work-card-cover"><div class="cover-glow" style="background:#B79C6C;top:40%;left:30%"></div><div class="cover-glow" style="background:#3B8E9C;top:20%;left:60%"></div><span class="cover-label">SYNTH</span></div><p class="work-card-tag">Toolchain · 2025</p><h3 class="work-card-title">SynthFrame</h3><p class="work-card-desc">自研 AI 短片工具链：文本分镜到视频帧的自动化管线，集成 SD、帧插值与音频同步。</p></div>
+  </div>
+</div></section>
+
+<section class="section" id="contact"><div class="section-inner"><div class="reveal">
+  <p class="section-label">Contact</p>
+  <h2 class="section-title">Let's  Connect</h2>
+  <p style="color:rgba(138,165,181,0.15);margin-bottom:1.5rem;font-size:0.9rem;letter-spacing:2px;font-weight:200">聊聊 AI 影像的可能性，或者一起做点什么。</p>
+  <div class="contact-links">
+    <a href="https://github.com/XannnN97" target="_blank" class="contact-btn"><span class="contact-btn-icon">★</span><span class="contact-btn-label">@XannnN97</span></a>
+    <a href="mailto:1033142216@qq.com" class="contact-btn"><span class="contact-btn-icon">✉</span><span class="contact-btn-label">1033142216@qq.com</span></a>
+  </div>
+</div></div></section>
+
+<footer class="footer"><p>© 2025 Xan · Built with intention</p></footer>
+
+<script>
+// Dual-layer particle system — stellar drift
+;(function(){
+  var c=document.getElementById('particle-canvas'),ctx=c.getContext('2d');
+  var fg=[],bg=[],W,H;
+  function resize(){
+    W=c.width=window.innerWidth;H=c.height=window.innerHeight;
+    // Foreground: ~20 large warm gold stars, drifting right
+    fg=[];for(var i=0;i<Math.min(20,W<600?10:20);i++)fg.push({x:Math.random()*W,y:Math.random()*H,s:Math.random()*2.5+1.2,a:0.15+Math.random()*0.2,v:0.1+Math.random()*0.15,p:Math.random()*6.28,sp:0.004+Math.random()*0.01});
+    // Background: ~80 tiny white stardust, drifting left
+    bg=[];for(var i=0;i<Math.min(80,W<600?40:80);i++)bg.push({x:Math.random()*W,y:Math.random()*H,s:Math.random()*0.8+0.2,a:0.05+Math.random()*0.1,v:0.02+Math.random()*0.06,p:Math.random()*6.28,sp:0.002+Math.random()*0.006});
+  }
+  window.addEventListener('resize',resize);
+  function anim(){
+    ctx.clearRect(0,0,W,H);
+    var sy=window.pageYOffset||document.documentElement.scrollTop||0;
+    var sr=Math.min(sy/(document.documentElement.scrollHeight-window.innerHeight),1);
+    // Draw bg stardust first
+    for(var i=0;i<bg.length;i++){
+      var s=bg[i];s.x-=s.v;s.y+=(Math.sin(Date.now()*s.sp+s.p))*0.02;
+      if(s.x<-10)s.x=W+10;if(s.x>W+10)s.x=-10;if(s.y<-10)s.y=H+10;if(s.y>H+10)s.y=-10;
+      var fade=1-Math.pow(s.y/H,0.8)*1.5*sr;if(fade<0)fade=0;
+      var al=s.a*fade*(0.7+0.3*Math.sin(Date.now()*s.sp*2+s.p));if(al<0.002)continue;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.s,0,6.28);ctx.fillStyle='rgba(232,229,225,'+al+')';ctx.fill();
+    }
+    // Draw fg stars
+    for(var i=0;i<fg.length;i++){
+      var s=fg[i];s.x+=s.v;s.y+=(Math.sin(Date.now()*s.sp+s.p))*0.03;
+      if(s.x<-20)s.x=W+20;if(s.x>W+20)s.x=-20;if(s.y<-20)s.y=H+20;if(s.y>H+20)s.y=-20;
+      var fade=1-(s.y/H)*1.2*sr;if(fade<0)fade=0;
+      var tw=0.7+0.3*Math.sin(Date.now()*s.sp+s.p);
+      var al=s.a*tw*fade;if(al<0.003)continue;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.s,0,6.28);ctx.fillStyle='rgba(232,184,136,'+al+')';ctx.fill();
+      if(s.s>2&&al>0.08){ctx.beginPath();ctx.arc(s.x,s.y,s.s*2.5,0,6.28);ctx.fillStyle='rgba(232,184,136,'+(al*0.1)+')';ctx.fill();}
+    }
+    requestAnimationFrame(anim);
+  }
+  resize();anim();
+})();
+
+;(function(){var el=document.getElementById('tagline'),t='从影视后期到 AI 短片导演 — 构建想象到影像的最短路径。',i=0;el.textContent='';function ty(){if(i<t.length){el.textContent+=t.charAt(i);i++;setTimeout(ty,50+Math.random()*40);}}setTimeout(ty,1600);})();
+;(function(){var r=document.querySelectorAll('.reveal');if(!('IntersectionObserver'in window)){for(var x=0;x<r.length;x++)r[x].classList.add('visible');return;}var o=new IntersectionObserver(function(e){for(var x=0;x<e.length;x++){if(e[x].isIntersecting){e[x].target.classList.add('visible');o.unobserve(e[x].target);}}},{threshold:0.12});for(var x=0;x<r.length;x++)o.observe(r[x]);})();
+;(function(){var s=document.querySelectorAll('.section,.hero'),l=document.querySelectorAll('.nav-links a');var o=new IntersectionObserver(function(e){for(var x=0;x<e.length;x++){if(e[x].isIntersecting){var id=e[x].target.id;for(var y=0;y<l.length;y++){l[y].style.color=l[y].getAttribute('href')==='#'+id?'rgba(232,201,160,0.3)':'rgba(232,201,160,0.15)';}}}},{threshold:0.3});for(var x=0;x<s.length;x++)o.observe(s[x]);})();
+;(function(){var nav=document.getElementById('navbar');window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>100);});})();
+</script>
+</body>
+</html>

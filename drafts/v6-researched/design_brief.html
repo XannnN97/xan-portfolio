@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio 设计稿 · 调研与构思</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+  background:#08080a;color:rgba(242,239,234,0.7);line-height:1.9;padding:3rem;
+  max-width:800px;margin:0 auto
+}
+h1{font-size:1.6rem;font-weight:300;color:#f2efea;margin-bottom:0.3rem;letter-spacing:4px}
+h1 strong{font-weight:700;background:linear-gradient(135deg,#d03030,#c08020);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+h2{font-size:1rem;font-weight:500;color:#f2efea;margin:2rem 0 0.5rem;letter-spacing:2px}
+h3{font-size:0.8rem;font-weight:600;color:#c05040;margin:1.5rem 0 0.3rem;letter-spacing:1px}
+p{margin-bottom:0.8rem;font-size:0.85rem}
+em{color:rgba(242,239,234,0.3);font-style:normal}
+.divider{width:40px;height:1px;background:rgba(200,80,60,0.2);margin:1.5rem 0}
+.tag{display:inline-block;padding:2px 10px;border:1px solid rgba(200,80,60,0.1);font-size:0.7rem;color:rgba(200,80,60,0.5);margin:0 3px 3px 0;border-radius:0}
+a{color:#c85840;text-decoration:none;border-bottom:1px solid rgba(200,80,60,0.2);transition:all 0.3s}
+a:hover{color:#f2efea;border-bottom-color:#f2efea}
+blockquote{border-left:1px solid rgba(200,80,60,0.1);padding-left:1rem;margin:1rem 0;color:rgba(242,239,234,0.35);font-size:0.8rem}
+ul{padding-left:1.2rem;margin-bottom:1rem}
+li{font-size:0.85rem;margin-bottom:0.3rem;color:rgba(242,239,234,0.5)}
+</style>
+</head>
+<body>
+
+<h1>Portfolio 设计稿 · <strong>调研与构思</strong></h1>
+<div class="divider"></div>
+
+<p>根据你之前的反馈——<em>白色主体文字 + 红黄色标题 + 克制整体感</em>——我调研了一批优秀的设计作品后，出了两个设计方向。</p>
+
+<h2>📋 调研来源</h2>
+<p>参考了以下方向的设计作品：</p>
+<ul>
+  <li><strong>Awwwards</strong> 年度最佳作品集网站（Portfolio 类别）</li>
+  <li><strong>Gallereee</strong> 暗色主题作品集精选（Dark Mode Portfolio）</li>
+  <li><strong>SiteBuilderReport</strong>  Filmmaker Portfolios 集合（15+ 导演/摄影师案例）</li>
+  <li><strong>Colorlib</strong>  28 个最佳导演作品集网站</li>
+  <li><strong>Orpetron</strong>  获奖暗色网站设计分析</li>
+  <li><strong>Tempixel Design</strong> 摄影师/导演作品集案例分析</li>
+</ul>
+
+<h2>🔍 调研发现</h2>
+
+<h3>暗色背景 + 红黄配色</h3>
+<ul>
+  <li>暗色背景是导演/创作者作品集的主流选择——让视觉作品成为焦点</li>
+  <li>红色点缀在暗色背景上效果突出（Red Creative Films, Ruth Film Productions 等案例）</li>
+  <li>"Shades of grey, black or white are prominent colors favored by Filmmakers for use as text or background" — Fabrik 对 120 个导演作品集的分析结论</li>
+  <li>橙/红/黑组合营造 retro-futuristic 氛围（Kirill Groshev 案例）</li>
+</ul>
+
+<h3>克制设计的关键要素</h3>
+<ul>
+  <li><strong>留白是奢侈品</strong>——获奖作品普遍使用大量留白</li>
+  <li><strong>文字层级清晰</strong>——大字号 + 轻字重 + 宽松字距</li>
+  <li><strong>动效应少而精</strong>——只在一个关键交互点上做效果</li>
+  <li><strong>网格或极简</strong>——要么严格网格排版，要么完全无框</li>
+</ul>
+
+<h3>针对"红黄色系 + 白色文字"的配色优化</h3>
+<ul>
+  <li>纯红(#ff0000)和纯黄(#ffff00)在暗底上过于刺眼 → 改用<strong>深红(#b03020~#d04030) + 暖金(#c08020~#d0a030)</strong></li>
+  <li>白色文字在暗底上推荐用<strong>暖白(#f0ebe5)或冷白(#f2eff0)</strong>，避免纯白(#fff)的刺眼</li>
+  <li>次级文字 opacity 0.2~0.5，建立清晰的信息层级</li>
+</ul>
+
+<div class="divider" style="margin:2rem 0"></div>
+
+<h2>🎨 两个设计方向</h2>
+
+<h3>A 版 · CINERAMA（电影感宽银幕）</h3>
+<p>
+  灵感来自电影片头字卡。顶部/底部的黑框模拟宽银幕比例，文字排版追求
+  编辑主义的秩序感。作品展示采用胶片条带式的纵向列表。
+</p>
+<p style="color:rgba(242,239,234,0.3);font-size:0.8rem">
+  → 适合你：如果你希望页面更有"电影感"，像一个导演的官方页面而非技术博客
+</p>
+<p>
+  <span class="tag">#电影感</span>
+  <span class="tag">#宽银幕</span>
+  <span class="tag">#编辑主义</span>
+  <span class="tag">#深红暖金</span>
+</p>
+<p>
+  <a href="portfolio_cinerama.html" target="_blank">预览 CINERAMA 版 →</a>
+</p>
+
+<h3>B 版 · PULSE（信号脉冲）</h3>
+<p>
+  灵感来自信号塔的灯光节奏。极细网格背景营造科技纹理，底部呼吸光模拟
+  信号发射。作品展示采用 2x2 卡片网格，信息密度更高。
+</p>
+<p style="color:rgba(242,239,234,0.3);font-size:0.8rem">
+  → 适合你：如果你希望页面更"现代感"，像一个科技创作者的工作台
+</p>
+<p>
+  <span class="tag">#信号红</span>
+  <span class="tag">#琥珀黄</span>
+  <span class="tag">#网格纹理</span>
+  <span class="tag">#卡片网格</span>
+</p>
+<p>
+  <a href="portfolio_pulse.html" target="_blank">预览 PULSE 版 →</a>
+</p>
+
+<div class="divider" style="margin:2rem 0"></div>
+
+<p style="font-size:0.75rem;color:rgba(242,239,234,0.15)">
+  两个设计稿目前为 <strong>视觉方向稿</strong>，尚未包含完整交互（粒子、滚动动效、WeChat 弹窗等）。
+  等你确认方向后，再进行完整版搭建。<br><br>
+  PS：v5 的两版（Ember / Signal）已清理，不作为备选。
+</p>
+
+</body>
+</html>

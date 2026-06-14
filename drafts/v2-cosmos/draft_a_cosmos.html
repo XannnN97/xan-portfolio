@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Xan · AI Short Film Director — Cosmos</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  background:#2A2A2A;
+  color:#E8E5E1;line-height:1.7;overflow-x:hidden;cursor:default;
+  min-height:100vh
+}
+/* Seamless cosmic gradient — no horizontal lines */
+body::before{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  z-index:-2;
+  background:linear-gradient(180deg,#3D4550 0%,#3D4550 15%,#2A2A2A 45%,#2A2A2A 75%,#222020 100%);
+  background-attachment:fixed
+}
+/* Subtle atmospheric haze */
+body::after{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  z-index:-1;
+  background:radial-gradient(ellipse at 50% 0%,rgba(183,156,108,0.03) 0%,transparent 60%);
+  pointer-events:none
+}
+#particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(183,156,108,0.3);border-radius:2px}
+
+/* Nav — fully transparent, no border */
+.nav{
+  position:fixed;top:0;left:0;right:0;
+  z-index:100;
+  padding:0 2rem;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:transparent;
+  transition:background 0.6s,backdrop-filter 0.6s
+}
+.nav.scrolled{background:rgba(42,42,42,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.nav-brand{
+  font-size:1.1rem;font-weight:300;
+  color:#E8C9A0;letter-spacing:6px;text-decoration:none
+}
+.nav-brand span{color:#B79C6C}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{
+  color:rgba(232,201,160,0.5);text-decoration:none;
+  font-size:0.78rem;letter-spacing:2px;
+  transition:all 0.4s;position:relative;font-weight:300
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-2px;left:50%;
+  width:0;height:1px;background:#B79C6C;
+  transition:all 0.4s;transform:translateX(-50%)
+}
+.nav-links a:hover{color:#E8C9A0}
+.nav-links a:hover::after{width:60%}
+
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  position:relative;z-index:1;padding:2rem
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 20px;
+  border:1px solid rgba(183,156,108,0.15);border-radius:20px;
+  font-size:0.7rem;letter-spacing:3px;
+  color:rgba(232,201,160,0.7);text-transform:uppercase;
+  margin-bottom:2rem;font-weight:300;
+  opacity:0;animation:fadeSlideUp 1s 0.3s forwards
+}
+.hero-badge-dot{width:5px;height:5px;border-radius:50%;background:#B79C6C;animation:pulseDot 3s infinite}
+.hero-name{
+  font-size:clamp(2.8rem,8vw,5rem);
+  font-weight:200;letter-spacing:10px;
+  color:#E8C9A0;margin-bottom:1rem;
+  opacity:0;animation:fadeSlideUp 1s 0.6s forwards
+}
+.hero-name span{font-weight:600;background:linear-gradient(135deg,#B79C6C,#E8C9A0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-role{
+  font-size:clamp(0.9rem,2.2vw,1.2rem);
+  font-weight:300;color:rgba(232,201,160,0.6);margin-bottom:0.5rem;
+  letter-spacing:2px;
+  opacity:0;animation:fadeSlideUp 1s 0.9s forwards
+}
+.hero-role-arrow{display:inline-block;margin:0 15px;color:#B79C6C;opacity:0.6}
+.hero-tagline{
+  font-size:clamp(0.85rem,1.6vw,1rem);
+  color:rgba(138,165,181,0.7);max-width:560px;font-weight:300;
+  opacity:0;animation:fadeSlideUp 1s 1.2s forwards
+}
+.hero-scroll{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  opacity:0;animation:fadeSlideUp 1s 2s forwards;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:rgba(183,156,108,0.3);font-size:0.6rem;letter-spacing:3px;font-weight:300
+}
+.hero-scroll-line{width:1px;height:30px;background:linear-gradient(to bottom,rgba(183,156,108,0.4),transparent);animation:scrollBounce 2.5s infinite}
+
+.section{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:80px 2rem}
+.section-inner{max-width:900px;margin:0 auto;width:100%}
+.section-label{
+  font-size:0.65rem;letter-spacing:4px;
+  color:rgba(183,156,108,0.5);text-transform:uppercase;margin-bottom:0.8rem;font-weight:300
+}
+.section-title{font-size:2rem;font-weight:200;margin-bottom:2rem;color:#E8C9A0;letter-spacing:2px}
+.section-title strong{font-weight:600;color:#B79C6C}
+
+.about-text{font-size:1rem;color:rgba(138,165,181,0.8);line-height:2;margin-bottom:2.5rem;max-width:700px;font-weight:300}
+.about-text .highlight{color:#E8C9A0;font-weight:400}
+.about-text .accent{color:#B79C6C}
+
+.skills-cloud{display:flex;flex-wrap:wrap;gap:10px;margin-top:0.5rem}
+.skill-tag{
+  padding:6px 20px;
+  border:1px solid rgba(183,156,108,0.1);border-radius:20px;
+  font-size:0.78rem;color:rgba(138,165,181,0.7);
+  transition:all 0.4s;cursor:default;font-weight:300;
+  background:rgba(42,42,42,0.3)
+}
+.skill-tag:hover{
+  border-color:rgba(183,156,108,0.3);color:#E8C9A0;
+  background:rgba(183,156,108,0.06);
+  transform:translateY(-2px);
+  box-shadow:0 4px 20px rgba(183,156,108,0.06)
+}
+
+.works-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem}
+.work-card{
+  background:rgba(42,42,42,0.5);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(183,156,108,0.06);border-radius:16px;
+  overflow:hidden;transition:all 0.5s;position:relative;cursor:pointer
+}
+.work-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  border-radius:16px;padding:1px;
+  background:linear-gradient(135deg,rgba(183,156,108,0.15),rgba(59,142,156,0.08));
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:0;transition:opacity 0.5s;pointer-events:none
+}
+.work-card:hover::before{opacity:1}
+.work-card:hover{
+  transform:translateY(-6px);
+  border-color:rgba(183,156,108,0.12);
+  box-shadow:0 12px 40px rgba(0,0,0,0.3),0 0 0 1px rgba(183,156,108,0.03);
+  background:rgba(42,42,42,0.7)
+}
+.work-card-cover{height:170px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.work-card-cover .cover-label{font-size:1.8rem;font-weight:200;letter-spacing:6px;color:rgba(232,201,160,0.06);z-index:1}
+.work-card-cover .cover-glow{position:absolute;width:120px;height:120px;border-radius:50%;filter:blur(45px);opacity:0.2;transition:opacity 0.5s}
+.work-card:hover .cover-glow{opacity:0.4}
+.work-card-body{padding:1.2rem 1.5rem 1.5rem}
+.work-card-title{font-size:1rem;font-weight:500;color:#E8C9A0;margin-bottom:4px}
+.work-card-tag{font-size:0.65rem;color:rgba(183,156,108,0.6);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase}
+.work-card-desc{font-size:0.85rem;color:rgba(138,165,181,0.7);line-height:1.7}
+
+.contact-links{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1.5rem}
+.contact-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:12px 28px;
+  border:1px solid rgba(183,156,108,0.12);border-radius:25px;
+  color:rgba(138,165,181,0.7);text-decoration:none;font-size:0.85rem;
+  transition:all 0.4s;font-weight:300;
+  background:rgba(42,42,42,0.3)
+}
+.contact-btn:hover{
+  border-color:rgba(183,156,108,0.3);color:#E8C9A0;
+  background:rgba(183,156,108,0.06);
+  transform:translateY(-3px);
+  box-shadow:0 8px 25px rgba(183,156,108,0.06)
+}
+.contact-btn-icon{font-size:1.1rem;width:22px;text-align:center}
+
+.footer{position:relative;z-index:1;text-align:center;padding:2.5rem;font-size:0.65rem;color:rgba(61,61,61,0.5);letter-spacing:3px;font-weight:300}
+
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.8s ease,transform 0.8s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:0.15}}
+@keyframes scrollBounce{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(6px);opacity:0.3}}
+
+@media(max-width:768px){
+  .nav{padding:0 1rem}.nav-links{gap:1.2rem}.nav-links a{font-size:0.72rem}
+  .section{padding:60px 1.2rem;min-height:auto}
+  .section-title{font-size:1.5rem}.hero-name{letter-spacing:5px}
+  .works-grid{grid-template-columns:1fr}.contact-links{flex-direction:column}
+  .contact-btn{justify-content:center}.about-text{font-size:0.95rem}
+}
+@media(max-width:480px){
+  .nav-links a{font-size:0.65rem;letter-spacing:1px}.nav-links{gap:0.8rem}
+  .skill-tag{font-size:0.72rem;padding:5px 15px}
+}
+</style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+<nav class="nav" id="navbar"><a href="#hero" class="nav-brand">X<span>a</span>n</a>
+<ul class="nav-links"><li><a href="#about">About</a></li><li><a href="#works">Works</a></li><li><a href="#contact">Contact</a></li></ul></nav>
+
+<section class="hero" id="hero">
+  <div class="hero-badge"><span class="hero-badge-dot"></span>Director · Creator</div>
+  <h1 class="hero-name"><span>Xan</span></h1>
+  <p class="hero-role">Post-Production <span class="hero-role-arrow">→</span> <strong style="color:#E8C9A0;font-weight:400">AI Short Film Director</strong></p>
+  <p class="hero-tagline" id="tagline"></p>
+  <div class="hero-scroll"><span>SCROLL</span><div class="hero-scroll-line"></div></div>
+</section>
+
+<section class="section" id="about"><div class="section-inner"><div class="reveal">
+  <p class="section-label">About</p>
+  <h2 class="section-title">从 <strong>后期</strong> 到 <strong>前期</strong></h2>
+  <div class="about-text">
+    <p>我是 <span class="highlight">Xan</span>，一位从影视后期转型 AI 短片导演的创作者。</p>
+    <p style="margin-top:1rem">过去十年深耕在影视后期制作的每一个环节——剪辑、调色、合成、音效设计。现在将这份对镜头语言的直觉与 AI 生成技术融合，构建从 <span class="accent">"脑内画面"</span> 到 <span class="accent">"可执行分镜"</span> 的完整工具链。</p>
+    <p style="margin-top:1rem">AI 不会取代创作者，而是赋予每一个人将想象力转化为影像的能力。目标是打造那条最短的路径。</p>
+  </div>
+  <h3 style="font-weight:300;font-size:0.85rem;color:rgba(138,165,181,0.6);margin-bottom:0.8rem;letter-spacing:2px">技能 · 工具链</h3>
+  <div class="skills-cloud">
+    <span class="skill-tag">Post-Production</span><span class="skill-tag">Compositing</span><span class="skill-tag">Color Grading</span>
+    <span class="skill-tag">AI Film Pipeline</span><span class="skill-tag">Stable Diffusion</span><span class="skill-tag">ComfyUI</span>
+    <span class="skill-tag">Runway Gen</span><span class="skill-tag">Frame Interpolation</span><span class="skill-tag">Prompt Engineering</span>
+    <span class="skill-tag">DaVinci Resolve</span><span class="skill-tag">After Effects</span><span class="skill-tag">Nuke</span>
+    <span class="skill-tag">Blender</span><span class="skill-tag">Python</span><span class="skill-tag">Toolchain Development</span>
+  </div>
+</div></div></section>
+
+<section class="section" id="works"><div class="section-inner">
+  <div class="reveal"><p class="section-label">Works</p><h2 class="section-title">代表 <strong>作品</strong></h2></div>
+  <div class="works-grid">
+    <div class="work-card reveal"><div class="work-card-cover" style="background:linear-gradient(135deg,#2A2A2A,#3D4550)"><div class="cover-glow" style="background:#B79C6C;top:30%;left:20%"></div><div class="cover-glow" style="background:#3B8E9C;top:50%;left:60%"></div><span class="cover-label">ECLIPSE</span></div><div class="work-card-body"><p class="work-card-tag">AI Short Film · 2025</p><h3 class="work-card-title">Eclipse</h3><p class="work-card-desc">完全由 AI 生成的科幻短片，探索记忆与身份的意识迷宫。全程使用 ComfyUI 工作流 + 帧插值完成。</p></div></div>
+    <div class="work-card reveal"><div class="work-card-cover" style="background:linear-gradient(135deg,#3D4550,#2A2A2A)"><div class="cover-glow" style="background:#3B8E9C;top:25%;left:40%"></div><div class="cover-glow" style="background:#B79C6C;top:60%;left:30%"></div><span class="cover-label">NEON</span></div><div class="work-card-body"><p class="work-card-tag">AI Music Video · 2025</p><h3 class="work-card-title">Neon Drizzle</h3><p class="work-card-desc">赛博朋克风格的 AI 音乐短片，将传统剪辑节奏与 AI 视觉生成结合，打造沉浸式的霓虹雨夜叙事。</p></div></div>
+    <div class="work-card reveal"><div class="work-card-cover" style="background:linear-gradient(135deg,#2A2A2A,#3D4550)"><div class="cover-glow" style="background:#B79C6C;top:40%;left:30%"></div><div class="cover-glow" style="background:#3B8E9C;top:20%;left:60%"></div><span class="cover-label">SYNTH</span></div><div class="work-card-body"><p class="work-card-tag">Toolchain · 2025</p><h3 class="work-card-title">SynthFrame</h3><p class="work-card-desc">自研 AI 短片工具链：从文本分镜到视频帧的自动化管线，集成 SD、帧插值与音频同步。</p></div></div>
+  </div>
+</div></section>
+
+<section class="section" id="contact"><div class="section-inner"><div class="reveal">
+  <p class="section-label">Contact</p>
+  <h2 class="section-title">Let's <strong>Connect</strong></h2>
+  <p style="color:rgba(138,165,181,0.6);margin-bottom:0.5rem;font-size:0.95rem">聊聊 AI 影像的可能性，或者一起做点什么。</p>
+  <div class="contact-links">
+    <a href="https://github.com/XannnN97" target="_blank" rel="noopener" class="contact-btn"><span class="contact-btn-icon">&#9733;</span><span class="contact-btn-label">@XannnN97</span></a>
+    <a href="mailto:1033142216@qq.com" class="contact-btn"><span class="contact-btn-icon">&#9993;</span><span class="contact-btn-label">1033142216@qq.com</span></a>
+  </div>
+</div></div></section>
+
+<footer class="footer"><p>&copy; 2025 Xan · Built with intention</p></footer>
+
+<script>
+// Stars — dense at top, fading with scroll
+;(function(){
+  var c=document.getElementById('particle-canvas'),ctx=c.getContext('2d');
+  var st=[],W,H,sz=0;
+  function resize(){
+    W=c.width=window.innerWidth;H=c.height=window.innerHeight;
+    var n=Math.min(Math.floor(W*0.35),W<600?80:200);st=[];
+    for(var i=0;i<n;i++){
+      var yPos=Math.random();
+      if(yPos>0.7&&Math.random()>0.3) yPos=Math.random()*0.7;
+      st.push({x:Math.random()*W,y:yPos,s:Math.random()*2.5+0.3,a:0.2+Math.random()*0.5,p:Math.random()*6.28,sp:0.005+Math.random()*0.03,cl:Math.random()<0.7?'255,255,255':'232,201,160'});
+    }
+  }
+  window.addEventListener('resize',resize);
+  function anim(){
+    ctx.clearRect(0,0,W,H);
+    var sy=window.pageYOffset||document.documentElement.scrollTop||0;
+    var sr=Math.min(sy/(document.documentElement.scrollHeight-window.innerHeight),1);
+    for(var i=0;i<st.length;i++){
+      var s=st[i],tw=0.5+0.5*Math.sin(Date.now()*s.sp+s.p);
+      var fade=1-(Math.pow(s.y,0.8)*1.8*sr);if(fade<0)fade=0;
+      var al=s.a*tw*fade;if(al<0.005)continue;
+      var r=s.s*(0.8+0.3*tw);
+      ctx.beginPath();ctx.arc(s.x,s.y*H,r,0,6.28);
+      ctx.fillStyle='rgba('+s.cl+','+al+')';ctx.fill();
+      if(s.s>1.8&&al>0.2){ctx.beginPath();ctx.arc(s.x,s.y*H,r*3,0,6.28);ctx.fillStyle='rgba('+s.cl+','+(al*0.08)+')';ctx.fill();}
+    }
+    requestAnimationFrame(anim);
+  }
+  resize();anim();
+})();
+
+;(function(){var el=document.getElementById('tagline'),t='从影视后期到 AI 短片导演 — 构建想象到影像的最短路径。',i=0;el.textContent='';function ty(){if(i<t.length){el.textContent+=t.charAt(i);i++;setTimeout(ty,40+Math.random()*30);}}setTimeout(ty,1500);})();
+
+;(function(){var r=document.querySelectorAll('.reveal');if(!('IntersectionObserver'in window)){for(var x=0;x<r.length;x++)r[x].classList.add('visible');return;}var o=new IntersectionObserver(function(e){for(var x=0;x<e.length;x++){if(e[x].isIntersecting){e[x].target.classList.add('visible');o.unobserve(e[x].target);}}},{threshold:0.15});for(var x=0;x<r.length;x++)o.observe(r[x]);})();
+
+;(function(){var s=document.querySelectorAll('.section,.hero'),l=document.querySelectorAll('.nav-links a');var o=new IntersectionObserver(function(e){for(var x=0;x<e.length;x++){if(e[x].isIntersecting){var id=e[x].target.id;for(var y=0;y<l.length;y++){l[y].style.color=l[y].getAttribute('href')==='#'+id?'rgba(232,201,160,0.9)':'rgba(232,201,160,0.5)';}}}},{threshold:0.3});for(var x=0;x<s.length;x++)o.observe(s[x]);})();
+
+// Nav scroll effect
+;(function(){var nav=document.getElementById('navbar');window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>80);});})();
+</script>
+</body>
+</html>
