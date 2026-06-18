@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xan · AI Short Film Director</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Helvetica Neue",Arial,sans-serif;
+  background:#000;
+  color:#bbb;
+  line-height:1.7;
+  overflow-x:hidden
+}
+
+/* ===== Canvas ===== */
+#particle-canvas{
+  position:fixed;top:0;left:0;
+  width:100%;height:100%;
+  z-index:0;pointer-events:none
+}
+
+/* ===== Nav ===== */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:64px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 2rem;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px)
+}
+nav .brand{
+  font-size:1.2rem;font-weight:700;letter-spacing:6px;
+  text-decoration:none;color:#F5E816
+}
+nav .links{display:flex;gap:2rem;list-style:none}
+nav .links a{
+  color:#666;text-decoration:none;font-size:0.75rem;
+  letter-spacing:2px;text-transform:uppercase;
+  transition:color .3s
+}
+nav .links a:hover{color:#F5E816}
+
+/* ===== Sections ===== */
+section{
+  position:relative;z-index:1;
+  min-height:100vh;display:flex;
+  flex-direction:column;justify-content:center;
+  padding:100px 2rem
+}
+.section-inner{max-width:800px;margin:0 auto;width:100%}
+.section-num{
+  font-size:0.7rem;letter-spacing:3px;color:#555;
+  margin-bottom:0.5rem;font-family:'Courier New',monospace
+}
+.section-num span{color:#F5E816}
+h2{
+  font-size:2.2rem;font-weight:600;letter-spacing:6px;
+  text-transform:uppercase;color:#fff;margin-bottom:2rem
+}
+
+/* ===== Hero ===== */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  padding:2rem
+}
+.hero h1{
+  font-size:clamp(3.5rem,12vw,8rem);
+  font-weight:800;letter-spacing:12px;
+  color:#F5E816;margin-bottom:1rem;
+  opacity:0;transform:translateY(20px);
+  animation:glitchIn 1.2s .3s forwards
+}
+@keyframes glitchIn{
+  0%{opacity:0;transform:translateY(20px);clip-path:inset(0 0 100% 0)}
+  10%{clip-path:inset(0 0 60% 0);transform:translate(-3px,0)}
+  15%{clip-path:inset(0 0 0 0);transform:translate(3px,0)}
+  20%{clip-path:inset(0 0 40% 0)}
+  25%{clip-path:inset(0 0 0 0)}
+  100%{opacity:1;transform:translateY(0)}
+}
+.hero .role{
+  font-size:clamp(0.9rem,2vw,1.2rem);
+  letter-spacing:4px;text-transform:uppercase;
+  color:#555;margin-bottom:0.5rem;font-weight:300
+}
+.hero .role strong{
+  color:#F5E816;font-weight:600
+}
+.hero .tagline{
+  font-size:0.85rem;color:#444;
+  max-width:500px;font-family:'Courier New',monospace;
+  letter-spacing:1px;margin-top:0.5rem
+}
+.hero .line{
+  width:60px;height:2px;background:#F5E816;margin:1.5rem auto 0;
+  box-shadow:0 0 10px rgba(245,232,22,.4)
+}
+
+/* ===== About ===== */
+.about-text{
+  font-size:0.95rem;color:#777;line-height:2;
+  margin-bottom:2rem;max-width:650px
+}
+.about-text .hl{color:#e0e0e0}
+.about-text .ac{color:#F5E816}
+.skills{
+  display:flex;flex-wrap:wrap;gap:8px;
+  margin-top:1rem
+}
+.skills span{
+  padding:5px 16px;font-size:0.75rem;letter-spacing:1px;
+  border:1px solid #333;border-radius:2px;color:#888;
+  transition:all .3s;cursor:default
+}
+.skills span:hover{
+  border-color:#F5E816;color:#F5E816;
+  background:rgba(245,232,22,.05)
+}
+
+/* ===== Works ===== */
+.works-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1.2rem;margin-top:1.5rem
+}
+.work-card{
+  background:rgba(255,255,255,.01);
+  border:1px solid #1a1a1a;
+  padding:1.5rem;border-radius:2px;
+  transition:all .4s;position:relative;cursor:pointer
+}
+.work-card .num{
+  font-family:'Courier New',monospace;
+  font-size:0.7rem;color:#555;margin-bottom:0.5rem;
+  transition:color .3s
+}
+.work-card .num span{color:#F5E816}
+.work-card h3{
+  font-size:1rem;font-weight:600;letter-spacing:2px;
+  color:#ccc;margin-bottom:0.3rem;text-transform:uppercase;
+  transition:color .3s
+}
+.work-card .tag{
+  font-size:0.65rem;letter-spacing:1px;
+  color:#00B8FF;text-transform:uppercase;margin-bottom:0.6rem
+}
+.work-card p{
+  font-size:0.8rem;color:#555;line-height:1.7
+}
+.work-card:hover{
+  border-color:#F5E816;transform:translateY(-4px);
+  background:rgba(245,232,22,.02)
+}
+.work-card:hover h3{color:#F5E816}
+.work-card:hover .num{color:#F5E816}
+
+/* ===== Contact ===== */
+.contact-links{
+  display:flex;flex-wrap:wrap;gap:1rem;margin-top:1.5rem
+}
+.contact-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:12px 28px;
+  background:#F5E816;color:#000;
+  text-decoration:none;font-size:0.85rem;
+  letter-spacing:2px;font-weight:600;text-transform:uppercase;
+  border:1px solid #F5E816;border-radius:2px;
+  transition:all .3s;position:relative;overflow:hidden
+}
+.contact-btn:hover{
+  box-shadow:0 0 20px rgba(245,232,22,.3);
+  transform:translateY(-2px)
+}
+.contact-btn.outline{
+  background:transparent;color:#F5E816
+}
+.contact-btn.outline:hover{
+  background:rgba(245,232,22,.1)
+}
+
+/* ===== Footer ===== */
+footer{
+  position:relative;z-index:1;text-align:center;
+  padding:2rem;border-top:1px solid #111;
+  font-size:0.7rem;color:#333;letter-spacing:2px
+}
+
+/* ===== Reveal ===== */
+.reveal{
+  opacity:0;transform:translateY(25px);
+  transition:opacity .7s ease,transform .7s ease
+}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ===== Responsive ===== */
+@media(max-width:768px){
+  nav{padding:0 1rem}
+  nav .links{gap:1rem}
+  nav .links a{font-size:0.65rem;letter-spacing:1px}
+  section{padding:70px 1.2rem;min-height:auto}
+  h2{font-size:1.6rem;letter-spacing:4px}
+  .works-grid{grid-template-columns:1fr}
+  .contact-links{flex-direction:column}
+  .contact-btn{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<canvas id="particle-canvas"></canvas>
+
+<nav>
+  <a href="#" class="brand">XAN</a>
+  <ul class="links">
+    <li><a href="#about">[01]</a></li>
+    <li><a href="#works">[02]</a></li>
+    <li><a href="#contact">[03]</a></li>
+  </ul>
+</nav>
+
+<section class="hero" id="hero">
+  <h1>XAN</h1>
+  <p class="role">Film/TV Post-Production <strong>→</strong> AI Short Film Director</p>
+  <p class="tagline">// from mental imagery to executable storyboard</p>
+  <div class="line"></div>
+</section>
+
+<section id="about">
+  <div class="section-inner">
+    <p class="section-num reveal"><span>[01]</span> ABOUT</p>
+    <h2 class="reveal">Origin</h2>
+    <div class="about-text reveal">
+      <p>从影视后期转型 <span class="ac">AI 短片导演</span>。过去十年深耕剪辑、调色、合成、音效设计——现在正将这份镜头语言的直觉与 AI 生成技术融合。</p>
+      <p style="margin-top:1rem">构建从 <span class="ac">"脑内画面"</span> 到 <span class="ac">"可执行分镜"</span> 的完整工具链。</p>
+    </div>
+    <div class="skills reveal">
+      <span>Post-Production</span><span>Compositing</span><span>Color Grading</span>
+      <span>AI Film Pipeline</span><span>Stable Diffusion</span><span>ComfyUI</span>
+      <span>Runway Gen</span><span>Frame Interpolation</span><span>Prompt Engineering</span>
+      <span>DaVinci Resolve</span><span>After Effects</span><span>Nuke</span>
+      <span>Blender</span><span>Python</span><span>Toolchain Development</span>
+    </div>
+  </div>
+</section>
+
+<section id="works">
+  <div class="section-inner">
+    <p class="section-num reveal"><span>[02]</span> WORKS</p>
+    <h2 class="reveal">Projects</h2>
+    <div class="works-grid">
+      <div class="work-card reveal">
+        <p class="num">[<span>01</span>]</p>
+        <h3>Eclipse</h3>
+        <p class="tag">AI Short Film · 2025</p>
+        <p>一部完全由 AI 生成的科幻短片，探索记忆与身份边界的意识迷宫。ComfyUI + 帧插值完成。</p>
+      </div>
+      <div class="work-card reveal">
+        <p class="num">[<span>02</span>]</p>
+        <h3>Neon Drizzle</h3>
+        <p class="tag">AI Music Video · 2025</p>
+        <p>赛博朋克风格 AI 音乐短片，将传统剪辑节奏与 AI 视觉生成结合，打造霓虹雨夜叙事。</p>
+      </div>
+      <div class="work-card reveal">
+        <p class="num">[<span>03</span>]</p>
+        <h3>SynthFrame</h3>
+        <p class="tag">Toolchain · 2025</p>
+        <p>自研 AI 短片工具链：从文本分镜到视频帧的自动化管线，集成 SD、帧插值和音频同步。</p>
+      </div>
+      <div class="work-card reveal">
+        <p class="num">[<span>04</span>]</p>
+        <h3>FrameFlow</h3>
+        <p class="tag">Research · 2024</p>
+        <p>探索 AI 与传统后期的最优结合方案，一套可复用的 AI 视频生成 + 后期精修生产流程框架。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="section-inner">
+    <p class="section-num reveal"><span>[03]</span> CONTACT</p>
+    <h2 class="reveal">Connect</h2>
+    <p class="reveal" style="color:#555;font-size:0.9rem;margin-bottom:0.5rem">聊聊 AI 影像的可能性。</p>
+    <div class="contact-links">
+      <a href="https://github.com/XannnN97" target="_blank" class="contact-btn reveal">GitHub</a>
+      <a href="mailto:1033142216@qq.com" class="contact-btn outline reveal">Email</a>
+      <a href="https://twitter.com" target="_blank" class="contact-btn outline reveal">Twitter / X</a>
+    </div>
+  </div>
+</section>
+
+<footer>XAN · 2025</footer>
+
+<script>
+/* Particle System — subtle gold dust */
+(function(){
+  const c=document.getElementById('particle-canvas'),ctx=c.getContext('2d');
+  let p=[],W,H,m={x:null,y:null};
+  function resize(){
+    W=c.width=window.innerWidth;H=c.height=window.innerHeight;
+    const n=Math.min(Math.floor(W*H/18000),W<600?30:60);
+    p=Array.from({length:n},()=>({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-.5)*0.3,vy:(Math.random()-.5)*0.3,
+      s:Math.random()*2+1,a:Math.random()*0.3+0.1
+    }));
+  }
+  window.addEventListener('resize',resize);
+  document.addEventListener('mousemove',e=>{m.x=e.clientX;m.y=e.clientY});
+  document.addEventListener('touchmove',e=>{const t=e.touches[0];t&&(m.x=t.clientX,m.y=t.clientY)},{passive:true});
+  document.addEventListener('touchend',()=>{m.x=null;m.y=null});
+  document.addEventListener('mouseleave',()=>{m.x=null;m.y=null});
+  function animate(){
+    ctx.clearRect(0,0,W,H);
+    for(const q of p){
+      if(m.x!==null&&m.y!==null){
+        const dx=m.x-q.x,dy=m.y-q.y,dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<150){
+          const f=(150-dist)/150;
+          q.vx-=Math.cos(Math.atan2(dy,dx))*f*0.2;
+          q.vy-=Math.sin(Math.atan2(dy,dx))*f*0.2;
+        }
+      }
+      q.vx*=0.97;q.vy*=0.97;
+      q.x+=q.vx;q.y+=q.vy;
+      if(q.x<-10)q.x=W+10;if(q.x>W+10)q.x=-10;
+      if(q.y<-10)q.y=H+10;if(q.y>H+10)q.y=-10;
+      ctx.beginPath();
+      ctx.arc(q.x,q.y,q.s,0,Math.PI*2);
+      ctx.fillStyle=`rgba(245,232,22,${q.a})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(animate);
+  }
+  resize();animate();
+})();
+
+/* Intersection Observer */
+(function(){
+  const els=document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){els.forEach(e=>e.classList.add('visible'));return}
+  const o=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');o.unobserve(e.target)}})
+  },{threshold:0.15});
+  els.forEach(e=>o.observe(e));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Xan · 展示页设计·两版对比</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+  background:#000;
+  color:#bbb;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:2rem;
+  overflow-x:hidden
+}
+h1{
+  font-size:clamp(2rem,6vw,3rem);
+  font-weight:800;
+  letter-spacing:8px;
+  color:#F5E816;
+  margin-bottom:0.3rem;
+  text-transform:uppercase
+}
+.sub{
+  font-size:0.8rem;
+  color:#555;
+  letter-spacing:3px;
+  margin-bottom:0.5rem;
+  font-family:'Courier New',monospace
+}
+.divider{
+  width:40px;height:2px;
+  background:#F5E816;
+  margin:1rem auto 2.5rem;
+  box-shadow:0 0 8px rgba(245,232,22,0.3)
+}
+.cards{
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+  width:100%;
+  max-width:380px
+}
+.card{
+  display:flex;
+  flex-direction:column;
+  padding:1.8rem 2rem;
+  border-radius:2px;
+  text-decoration:none;
+  position:relative;
+  transition:all .3s;
+  border:1px solid #1a1a1a;
+  background:rgba(255,255,255,.01)
+}
+.card:active{transform:scale(0.97)}
+.card .num{
+  font-family:'Courier New',monospace;
+  font-size:0.7rem;
+  color:#555;
+  letter-spacing:2px;
+  margin-bottom:0.5rem
+}
+.card .num span{color:#F5E816}
+.card .title{
+  font-size:1.1rem;
+  font-weight:600;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:#e0e0e0;
+  margin-bottom:0.2rem;
+  transition:color .3s
+}
+.card .author{
+  font-size:0.7rem;
+  color:#555;
+  letter-spacing:1px;
+  margin-bottom:0.8rem
+}
+.card .desc{
+  font-size:0.78rem;
+  color:#555;
+  line-height:1.7
+}
+.card .tag{
+  display:inline-block;
+  margin-top:0.8rem;
+  font-size:0.65rem;
+  letter-spacing:1px;
+  padding:3px 10px;
+  border-radius:2px;
+  align-self:flex-start;
+  border:1px solid #333;
+  color:#888;
+  transition:all .3s
+}
+.card:hover{border-color:#F5E816;transform:translateY(-3px)}
+.card:hover .title{color:#F5E816}
+.card:hover .tag{border-color:#F5E816;color:#F5E816}
+
+footer{
+  margin-top:2.5rem;
+  font-size:0.65rem;
+  color:#333;
+  letter-spacing:2px
+}
+</style>
+</head>
+<body>
+
+<h1>对比</h1>
+<p class="sub">// CP2077 SUBTRACTION + PORTFOLIO v5</p>
+<div class="divider"></div>
+
+<a class="card" href="./round1.html">
+  <p class="num">[<span>01</span>]</p>
+  <p class="title">Round 1</p>
+  <p class="author">by <span style="color:#F5E816">main</span> · 手写</p>
+  <p class="desc">Glitch 渐变动画 · 暖金粒子 · 技能暗色边框 hover 变黄 · 卡片无边框 hover 黄线 · 商务冷静感</p>
+  <span class="tag">#克制 #粒子 #冷感</span>
+</a>
+
+<a class="card" href="./round2.html">
+  <p class="num">[<span>02</span>]</p>
+  <p class="title">Round 2</p>
+  <p class="author">by <span style="color:#00B8FF">claude_master</span> · AI 生成</p>
+  <p class="desc">Clip-path glitch 抖动 · 无粒子 · 技能黄边框 hover 填充黄 · 卡片 hover 黄底 glow · 饱满热烈</p>
+  <span class="tag">#饱满 #glitch #热烈</span>
+</a>
+
+<div class="divider" style="margin-top:2rem"></div>
+<p style="font-size:0.8rem;color:#555;letter-spacing:3px;margin-bottom:0.5rem;font-family:'Courier New',monospace">// PORTFOLIO v5 · RED YELLOW</p>
+
+<a class="card" href="./portfolio_ember.html">
+  <p class="num">[<span>A</span>]</p>
+  <p class="title">Ember · 烬火</p>
+  <p class="author">by <span style="color:#d08850">main</span> · 暖色基调</p>
+  <p class="desc">暖黑底 · 红橙渐变标题 · 暖白文字 · 琥珀点缀 · 红橙粒子 · 温暖克制如余烬</p>
+  <span class="tag">#温暖 #克制 #余烬</span>
+</a>
+
+<a class="card" href="./portfolio_signal.html">
+  <p class="num">[<span>B</span>]</p>
+  <p class="title">Signal · 信标</p>
+  <p class="author">by <span style="color:#d44040">main</span> · 冷色基调</p>
+  <p class="desc">深冷黑底 · 深红金黄渐变标题 · 冷白文字 · 信号红点缀 · 稀疏散点粒子 · 冷静锐利</p>
+  <span class="tag">#冷静 #锐利 #信标</span>
+</a>
+
+<div class="divider" style="margin-top:2rem"></div>
+<p style="font-size:0.8rem;color:#555;letter-spacing:3px;margin-bottom:0.5rem;font-family:'Courier New',monospace">// PORTFOLIO v6 · 调研后设计稿</p>
+
+<a class="card" href="./portfolio_brief.html">
+  <p class="num">[<span>📋</span>]</p>
+  <p class="title">调研与构思</p>
+  <p class="author">by <span style="color:#c05050">main</span> · 设计说明</p>
+  <p class="desc">调研来源 · 设计发现 · 配色依据 · 两个方向的说明</p>
+  <span class="tag">#先读这个</span>
+</a>
+
+<a class="card" href="./portfolio_cinerama.html">
+  <p class="num">[<span>A</span>]</p>
+  <p class="title">CINERAMA · 电影感宽银幕</p>
+  <p class="author">by <span style="color:#b0321e">main</span> · 设计稿</p>
+  <p class="desc">电影黑框 · 宽银幕字卡 · 深红暖金渐变 · 胶片条带式作品列表 · 编辑主义排版 · 无粒子干扰</p>
+  <span class="tag">#电影感 #宽银幕 #克制</span>
+</a>
+
+<a class="card" href="./portfolio_pulse.html">
+  <p class="num">[<span>B</span>]</p>
+  <p class="title">PULSE · 信号脉冲</p>
+  <p class="author">by <span style="color:#d03030">main</span> · 设计稿</p>
+  <p class="desc">极细网格纹理 · 底部呼吸光 · 信号红琥珀黄 · 2x2卡片网格 · 紧凑信息布局 · 无粒子干扰</p>
+  <span class="tag">#信号红 #网格 #现代</span>
+</a>
+
+<footer>← 建议先读设计说明，再看两版设计稿 · 告诉我你的意见</footer>
+</body>
+</html>
